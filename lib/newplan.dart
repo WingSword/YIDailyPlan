@@ -8,10 +8,14 @@ class NewPlanPage extends StatefulWidget {
   }
 }
 
+enum barItem { DAY, WEEK, MONTH, YEAR }
+
 class AddPlanState extends State<NewPlanPage> {
   int i = 0;
   String inputText = "";
-  IconData inputIcon=Icons.today;
+  IconData inputIcon = Icons.today;
+  String selectedCircle = "天";
+  List<String> barName = ["天", "周", "月", "年"];
   List ic = [
     Icons.today,
     Icons.style,
@@ -68,6 +72,7 @@ class AddPlanState extends State<NewPlanPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: new AppBar(
         title: new Text("New a Plan"),
         actions: <Widget>[
@@ -83,18 +88,18 @@ class AddPlanState extends State<NewPlanPage> {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           new Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              new Card(
-                shape: new CircleBorder(
-                  side: new BorderSide(color: Colors.black, width: 2),
-                ),
+              new SizedBox(
+                width: 32,
                 child: new IconButton(
+                  alignment: Alignment.centerRight,
+                  iconSize: 32,
                   icon: new Icon(inputIcon),
                   onPressed: () {},
                 ),
               ),
+              new Icon(Icons.arrow_drop_down,color: Colors.black87,),
               new Expanded(
                   child: new Container(
                 child: new TextField(
@@ -122,8 +127,61 @@ class AddPlanState extends State<NewPlanPage> {
                             offset: '${this.inputText}'.length))))),
                 padding:
                     const EdgeInsets.only(left: 5.0, right: 20.0, top: 10.0),
-              ))
+              )),
             ],
+          ),
+          new SizedBox(
+            height: 55,
+           child: new Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                new Container(
+                  child:new Text(
+                    "目标:   每",
+                    style: new TextStyle(fontSize: 20),
+                  ),
+                  margin: const EdgeInsets.only(left: 35),
+                ),
+
+                new Card(
+                    color: null,
+                    shadowColor: null,
+                    shape: UnderlineInputBorder(
+                      borderSide: new BorderSide(color: Colors.amber, width: 2),
+                    ),
+                    child: new PopupMenuButton<barItem>(
+                        child: new Text(
+                          " $selectedCircle  ",
+                          style: new TextStyle(fontSize: 20),
+                        ),
+                        onSelected: (barItem result) {
+                          setState(() {
+                            selectedCircle = barName[result.index];
+                          });
+                        },
+                        itemBuilder: (BuildContext context) =>
+                        <PopupMenuEntry<barItem>>[
+                          const PopupMenuItem<barItem>(
+                            value: barItem.DAY,
+                            child: Text("天"),
+                          ),
+                          const PopupMenuItem<barItem>(
+                            value: barItem.WEEK,
+                            child: Text("周"),
+                          ),
+                          const PopupMenuItem<barItem>(
+                              value: barItem.MONTH, child: Text('月')),
+                          const PopupMenuItem<barItem>(
+                              value: barItem.YEAR, child: Text('年')),
+                        ])),
+                targetJudge(),
+                new Text(
+                  "天",
+                  style: new TextStyle(fontSize: 20),
+                ),
+              ],
+            ),
           ),
 
           new Expanded(
@@ -146,7 +204,8 @@ class AddPlanState extends State<NewPlanPage> {
                       ),
                       mainAxisSpacing: 3.5,
                       crossAxisSpacing: 3.5,
-                      children: gridItemBuild(ic.length>iv.length?iv.length:ic.length),
+                      children: gridItemBuild(
+                          ic.length > iv.length ? iv.length : ic.length),
                     ),
                   )))
         ],
@@ -185,13 +244,13 @@ class AddPlanState extends State<NewPlanPage> {
               new Container(
                 padding: const EdgeInsets.only(left: 5),
                 child: new Text(
-                iv[num],
-                style: new TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black),
-              ),)
-
+                  iv[num],
+                  style: new TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black),
+                ),
+              )
             ],
           ),
         ),
@@ -199,10 +258,32 @@ class AddPlanState extends State<NewPlanPage> {
     );
   }
 
+  Widget targetJudge() {
+    return selectedCircle == "天"
+        ? new Container()
+        : new Container(
+            margin: const EdgeInsets.only(left: 25),
+            width: 35,
+            child: new TextField(
+              textAlign: TextAlign.center,
+              textAlignVertical: TextAlignVertical.bottom,
+              keyboardType: TextInputType.number,
+              maxLength: 3,
+              decoration: InputDecoration(
+                enabledBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: Colors.amber, width: 2.0)),
+                focusedBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(color: Colors.amberAccent, width: 2.0),
+                ),
+              ),
+            ),
+          );
+  }
+
   void sendInputLine(int num) {
     setState(() {
       inputText = iv[num];
-      inputIcon=ic[num];
+      inputIcon = ic[num];
     });
   }
 }
