@@ -1,5 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:yi_daily_plan/persistentstorage.dart';
 
 class NewPlanPage extends StatefulWidget {
   @override
@@ -11,36 +15,40 @@ class NewPlanPage extends StatefulWidget {
 enum barItem { DAY, WEEK, MONTH, YEAR }
 
 class AddPlanState extends State<NewPlanPage> {
-  int i = 0;
+  bool isAdd=true;
   String inputText = "";
-  IconData inputIcon = Icons.today;
-  String selectedCircle = "天";
+  String inputIcon = 'assets/jewelry.png';
+  int inputFrequency = 0;
+  int selectedCircle = 0;
   List<String> barName = ["天", "周", "月", "年"];
   List ic = [
-    Icons.today,
-    Icons.style,
-    Icons.list,
-    Icons.today,
-    Icons.style,
-    Icons.list,
-    Icons.today,
-    Icons.style,
-    Icons.list,
-    Icons.today,
-    Icons.style,
-    Icons.list,
-    Icons.today,
-    Icons.style,
-    Icons.list,
-    Icons.today,
-    Icons.style,
-    Icons.list,
-    Icons.today,
-    Icons.style,
-    Icons.list,
-    Icons.today,
-    Icons.style,
-    Icons.list,
+    'assets/jewelry.png',
+    'assets/jewelry.png',
+    'assets/jewelry.png',
+    'assets/jewelry.png',
+    'assets/jewelry.png',
+    'assets/jewelry.png',
+    'assets/jewelry.png',
+    'assets/jewelry.png',
+    'assets/jewelry.png',
+    'assets/jewelry.png',
+    'assets/jewelry.png',
+    'assets/jewelry.png',
+    'assets/jewelry.png',
+    'assets/jewelry.png',
+    'assets/jewelry.png',
+    'assets/jewelry.png',
+    'assets/jewelry.png',
+    'assets/jewelry.png',
+    'assets/jewelry.png',
+    'assets/jewelry.png',
+    'assets/jewelry.png',
+    'assets/jewelry.png',
+    'assets/jewelry.png',
+    'assets/jewelry.png',
+    'assets/jewelry.png',
+    'assets/jewelry.png',
+    'assets/jewelry.png',
   ];
   List iv = [
     "1111",
@@ -69,6 +77,8 @@ class AddPlanState extends State<NewPlanPage> {
     "33324",
   ];
 
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -79,7 +89,7 @@ class AddPlanState extends State<NewPlanPage> {
           new IconButton(
             icon: new Icon(Icons.check),
             onPressed: () {
-              Navigator.pop(context, true);
+              savePlan();
             },
           )
         ],
@@ -91,19 +101,33 @@ class AddPlanState extends State<NewPlanPage> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               new SizedBox(
-                width: 32,
-                child: new IconButton(
-                  alignment: Alignment.centerRight,
-                  iconSize: 32,
-                  icon: new Icon(inputIcon),
+                width: 72,
+                child: new TextButton(
+                  child: new Row(
+                    children: [
+                      new Image.asset(
+                        inputIcon,
+                        height: 32,
+                        width: 32,
+                      ),
+                      new Icon(
+                        Icons.arrow_drop_down,
+                        color: Colors.black87,
+                      ),
+                    ],
+                  ),
                   onPressed: () {},
                 ),
               ),
-              new Icon(Icons.arrow_drop_down,color: Colors.black87,),
               new Expanded(
                   child: new Container(
                 child: new TextField(
                     decoration: InputDecoration(
+                      labelText: '计划名称',
+                      labelStyle: TextStyle(
+                          color: Colors.orangeAccent,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold),
                       enabledBorder: OutlineInputBorder(
                           gapPadding: 0,
                           borderRadius: new BorderRadius.circular(8.0),
@@ -131,19 +155,18 @@ class AddPlanState extends State<NewPlanPage> {
             ],
           ),
           new SizedBox(
-            height: 55,
-           child: new Row(
+            height: 58,
+            child: new Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
                 new Container(
-                  child:new Text(
-                    "目标:   每",
+                  child: new Text(
+                    "周期:   每",
                     style: new TextStyle(fontSize: 20),
                   ),
                   margin: const EdgeInsets.only(left: 35),
                 ),
-
                 new Card(
                     color: null,
                     shadowColor: null,
@@ -152,38 +175,33 @@ class AddPlanState extends State<NewPlanPage> {
                     ),
                     child: new PopupMenuButton<barItem>(
                         child: new Text(
-                          " $selectedCircle  ",
+                          " " + barName[selectedCircle] + "  ",
                           style: new TextStyle(fontSize: 20),
                         ),
                         onSelected: (barItem result) {
                           setState(() {
-                            selectedCircle = barName[result.index];
+                            selectedCircle = result.index;
                           });
                         },
                         itemBuilder: (BuildContext context) =>
-                        <PopupMenuEntry<barItem>>[
-                          const PopupMenuItem<barItem>(
-                            value: barItem.DAY,
-                            child: Text("天"),
-                          ),
-                          const PopupMenuItem<barItem>(
-                            value: barItem.WEEK,
-                            child: Text("周"),
-                          ),
-                          const PopupMenuItem<barItem>(
-                              value: barItem.MONTH, child: Text('月')),
-                          const PopupMenuItem<barItem>(
-                              value: barItem.YEAR, child: Text('年')),
-                        ])),
+                            <PopupMenuEntry<barItem>>[
+                              const PopupMenuItem<barItem>(
+                                value: barItem.DAY,
+                                child: Text("天"),
+                              ),
+                              const PopupMenuItem<barItem>(
+                                value: barItem.WEEK,
+                                child: Text("周"),
+                              ),
+                              const PopupMenuItem<barItem>(
+                                  value: barItem.MONTH, child: Text('月')),
+                              const PopupMenuItem<barItem>(
+                                  value: barItem.YEAR, child: Text('年')),
+                            ])),
                 targetJudge(),
-                new Text(
-                  "天",
-                  style: new TextStyle(fontSize: 20),
-                ),
               ],
             ),
           ),
-
           new Expanded(
               child: new Container(
                   padding: const EdgeInsets.only(
@@ -222,7 +240,6 @@ class AddPlanState extends State<NewPlanPage> {
   }
 
   Widget gridItem(int num) {
-    i++;
     return new Card(
       shape: new RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20.0),
@@ -237,9 +254,9 @@ class AddPlanState extends State<NewPlanPage> {
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              new Icon(
+              new Image.asset(
                 ic[num],
-                color: Colors.black,
+                height: 24,
               ),
               new Container(
                 padding: const EdgeInsets.only(left: 5),
@@ -259,31 +276,100 @@ class AddPlanState extends State<NewPlanPage> {
   }
 
   Widget targetJudge() {
-    return selectedCircle == "天"
+    if (selectedCircle == 0) {
+      inputFrequency = 0;
+    } else if (selectedCircle == 1) {
+      inputFrequency = 5;
+    } else if (selectedCircle == 2) {
+      inputFrequency = 21;
+    } else if (selectedCircle == 3) {
+      inputFrequency = 300;
+    }
+    return selectedCircle == 0
         ? new Container()
-        : new Container(
-            margin: const EdgeInsets.only(left: 25),
-            width: 35,
-            child: new TextField(
-              textAlign: TextAlign.center,
-              textAlignVertical: TextAlignVertical.bottom,
-              keyboardType: TextInputType.number,
-              maxLength: 3,
-              decoration: InputDecoration(
-                enabledBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.amber, width: 2.0)),
-                focusedBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(color: Colors.amberAccent, width: 2.0),
+        : new Row(
+            children: [
+              new Container(
+                margin: const EdgeInsets.only(left: 25),
+                width: 35,
+                child: new TextField(
+                  textAlign: TextAlign.center,
+                  textAlignVertical: TextAlignVertical.bottom,
+                  keyboardType: TextInputType.phone,
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  maxLength: selectedCircle,
+                  onChanged: (result){
+                    inputFrequency=int.parse(result);
+                  },
+                  controller: TextEditingController.fromValue(TextEditingValue(
+                      text: inputFrequency.toString(),
+                      selection: TextSelection.fromPosition(TextPosition(
+                          affinity: TextAffinity.downstream,
+                          offset: '${this.inputFrequency}'.length)))),
+                  decoration: InputDecoration(
+                    enabledBorder: UnderlineInputBorder(
+                        borderSide:
+                            BorderSide(color: Colors.amber, width: 2.1)),
+                    focusedBorder: UnderlineInputBorder(
+                      borderSide:
+                          BorderSide(color: Colors.amberAccent, width: 2.1),
+                    ),
+                  ),
                 ),
               ),
-            ),
+              new Text(
+                barName[0],
+                style: new TextStyle(fontSize: 20),
+              ),
+            ],
           );
   }
-
   void sendInputLine(int num) {
     setState(() {
       inputText = iv[num];
       inputIcon = ic[num];
     });
+  }
+
+  void savePlan() async{
+    if(inputText.isEmpty){
+      showMyToast("Title can not be empty.");
+      return;
+    }
+    if(selectedCircle==1&&inputFrequency>7){
+      showMyToast("There are only 7 days in a week at most.");
+      return;
+    }
+    if(selectedCircle==2&&inputFrequency>31){
+      showMyToast("There are only 31 days in a month at most.");
+
+      return;
+    }
+    if(selectedCircle==3&&inputFrequency>365){
+      showMyToast("You are only allowed to set 365 days in a year frequency.");
+      return;
+    }
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    if( prefs.containsKey(inputText)){
+      showMyToast("There is already had same plan, you can change a name of this plan.");
+      return;
+    }
+
+    List<String> startData=[];
+    startData.add(inputIcon);
+    startData.add("$selectedCircle-$inputFrequency");
+
+    prefs.setStringList(inputText, startData);
+    Navigator.pop(context, true);
+  }
+  void showMyToast(String text){
+    Fluttertoast.showToast(
+        msg: text,
+        toastLength: Toast.LENGTH_SHORT,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.black54,
+        textColor: Colors.white,
+        fontSize: 16.0
+    );
   }
 }

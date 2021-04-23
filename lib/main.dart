@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:english_words/english_words.dart';
 import 'package:yi_daily_plan/newplan.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() => runApp(new MyApp());
 
@@ -26,10 +26,8 @@ class HomePage extends StatefulWidget {
 enum barItemName { one, two, three }
 
 class HomePageState extends State<HomePage> {
-  final wordPair = <WordPair>[];
-  final biggerFont = const TextStyle(fontSize: 17, fontWeight: FontWeight.bold);
-  final saveCard = new Set<String>();
-  final saveDate = new Map<String, Set<String>>();
+  final List<String> allItemTitle = [];
+  final allItem = new Map<String, List<String>>();
   final monthEnglish = <String>[
     'January',
     'February',
@@ -49,8 +47,26 @@ class HomePageState extends State<HomePage> {
       DateTime.now().day.toString();
   final DateTime currentTime = DateTime.now();
 
+  void refreshListData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    if (prefs.getKeys() != null && prefs.getKeys().isNotEmpty) {
+      allItemTitle.clear();
+      allItemTitle.addAll(prefs.getKeys().toList());
+      for (String str in allItemTitle) {
+        allItem.putIfAbsent(str, () => prefs.getStringList(str));
+      }
+    }
+  }
+
+  void changeItemData(String key) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.remove(key);
+    prefs.setStringList(key, allItem[key]);
+  }
+
   @override
   Widget build(BuildContext context) {
+    refreshListData();
     return new Scaffold(
       appBar: new AppBar(
         title: new Text(
@@ -100,13 +116,14 @@ class HomePageState extends State<HomePage> {
     Navigator.of(context).push(
       new MaterialPageRoute(
         builder: (context) {
-          final tiles = saveCard.map(
+          final tiles = allItemTitle.map(
             (pair) {
               return new Card(
                   child: new ListTile(
                 title: new Text(
-                  pair.toString(),
-                  style: biggerFont,
+                  pair,
+                  style:
+                      new TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
                 ),
               ));
             },
@@ -129,18 +146,18 @@ class HomePageState extends State<HomePage> {
   }
 
   Widget buildSuggestion() {
+
     return new ListView.builder(
         padding: const EdgeInsets.all(8.0),
+        itemCount: allItemTitle==null?0:allItemTitle.length,
         itemBuilder: (context, i) {
-          if (i >= wordPair.length)
-            wordPair.addAll(generateWordPairs().take(10));
-          return buildListRaw(wordPair[i]);
+          return buildListRaw(allItemTitle[i]);
         });
   }
 
-  Widget buildItemCalender(WordPair w, int weekday) {
-    final bool isCheck = saveDate.containsKey(w.toString()) &&
-        saveDate[w.toString()].contains(dateCalculate(weekday, true));
+  Widget buildItemCalender(String title, int weekday) {
+    final bool isCheck = allItem.containsKey(title) &&
+        allItem[title].contains(dateCalculate(weekday, true));
     return new Container(
       padding: const EdgeInsets.only(left: 2.0, right: 2.0),
       child: new Column(
@@ -156,10 +173,9 @@ class HomePageState extends State<HomePage> {
     );
   }
 
-  Widget buildListRaw(WordPair w) {
-    final alreadySaved = saveDate.containsKey(w.toString()) &&
-        saveDate[w.toString()]
-            .contains(dateCalculate(DateTime.now().weekday, true));
+  Widget buildListRaw(String title) {
+    final alreadySaved =
+        allItem[title].contains(dateCalculate(DateTime.now().weekday, true));
     return new Card(
       child: new ListTile(
         title: new Row(
@@ -175,7 +191,7 @@ class HomePageState extends State<HomePage> {
                   new Container(
                     padding: const EdgeInsets.only(bottom: 2.0, left: 12.0),
                     child: new Text(
-                      w.asPascalCase,
+                      title,
                       style: new TextStyle(
                         color: Colors.black,
                         fontSize: 17,
@@ -188,23 +204,19 @@ class HomePageState extends State<HomePage> {
                           bottom: 5.0, left: 12.0, top: 5.0),
                       child: new Row(
                         children: [
-                          buildItemCalender(w, 1),
-                          buildItemCalender(w, 2),
-                          buildItemCalender(w, 3),
-                          buildItemCalender(w, 4),
-                          buildItemCalender(w, 5),
-                          buildItemCalender(w, 6),
-                          buildItemCalender(w, 7),
+                          buildItemCalender(title, 1),
+                          buildItemCalender(title, 2),
+                          buildItemCalender(title, 3),
+                          buildItemCalender(title, 4),
+                          buildItemCalender(title, 5),
+                          buildItemCalender(title, 6),
+                          buildItemCalender(title, 7),
                         ],
                       )),
                   new Container(
                     padding: const EdgeInsets.only(bottom: 5.0, top: 5.0),
                     child: new Text(
-                        "Insisted on " +
-                            (saveDate.containsKey(w.toString())
-                                ? saveDate[w.toString()].length.toString()
-                                : "0") +
-                            " days",
+                        "Insisted on ${allItem[title].length - 2} days",
                         style: new TextStyle(
                             color: Colors.blueGrey, fontSize: 15)),
                   ),
@@ -219,27 +231,16 @@ class HomePageState extends State<HomePage> {
           color: alreadySaved ? Colors.green : Colors.black,
           onPressed: () {
             setState(() {
-              if (alreadySaved) {
-                if (saveDate.containsKey(w.toString())) {
-                  saveDate[w.toString()].remove(currentDate);
-                }
-                saveCard.remove(w.toString());
-              } else {
-                Set<String> tempSet = new Set();
-                if (saveDate.containsKey(w.toString())) {
-                  saveDate[w.toString()].add(currentDate);
-                } else {
-                  tempSet.add(currentDate);
-                  saveDate.putIfAbsent(w.toString(), () => tempSet);
-                }
-                saveCard.add(w.toString());
-              }
+              alreadySaved
+                  ? allItem[title].remove(currentDate)
+                  : allItem[title].add(currentDate);
+              changeItemData(title);
             });
           },
         ),
         onTap: () {
           setState(() {
-            gotoPlanInfo(w);
+            gotoPlanInfo(title);
           });
         },
         onLongPress: () {},
@@ -249,7 +250,7 @@ class HomePageState extends State<HomePage> {
 
   void menuDeal(barItemName bar) {
     if (bar == barItemName.one) {
-      pushSaved();
+      //pushSaved();
     }
   }
 
@@ -286,5 +287,5 @@ class HomePageState extends State<HomePage> {
             .toString();
   }
 
-  void gotoPlanInfo(WordPair w) {}
+  void gotoPlanInfo(String w) {}
 }
