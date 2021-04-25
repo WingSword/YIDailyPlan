@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:yi_daily_plan/persistentstorage.dart';
 
 class NewPlanPage extends StatefulWidget {
   @override
@@ -51,17 +50,17 @@ class AddPlanState extends State<NewPlanPage> {
     'assets/jewelry.png',
   ];
   List iv = [
-    "1111",
-    "2222",
-    "3333",
-    "1114",
-    "2225",
-    "3336",
-    "1117",
-    "2228",
-    "3339",
-    "11110",
-    "22211",
+    "早睡",
+    "早起",
+    "八杯水",
+    "运动",
+    "健身",
+    "跑步",
+    "戒糖",
+    "戒酒",
+    "戒奶茶",
+    "戒零食",
+    "戒夜宵",
     "33312",
     "11113",
     "22214",
@@ -342,7 +341,6 @@ class AddPlanState extends State<NewPlanPage> {
     }
     if(selectedCircle==2&&inputFrequency>31){
       showMyToast("There are only 31 days in a month at most.");
-
       return;
     }
     if(selectedCircle==3&&inputFrequency>365){
@@ -362,6 +360,7 @@ class AddPlanState extends State<NewPlanPage> {
     prefs.setStringList(inputText, startData);
     Navigator.pop(context, true);
   }
+
   void showMyToast(String text){
     Fluttertoast.showToast(
         msg: text,
