@@ -14,69 +14,70 @@ class NewPlanPage extends StatefulWidget {
 enum barItem { DAY, WEEK, MONTH, YEAR }
 
 class AddPlanState extends State<NewPlanPage> {
-  bool isAdd=true;
+  bool isAdd = true;
   String inputText = "";
-  String inputIcon = 'assets/jewelry.png';
+  String inputIcon = 'assets/icon22_purenatural.png';
   int inputFrequency = 0;
   int selectedCircle = 0;
   List<String> barName = ["天", "周", "月", "年"];
   List ic = [
-    'assets/jewelry.png',
-    'assets/jewelry.png',
-    'assets/jewelry.png',
-    'assets/jewelry.png',
-    'assets/jewelry.png',
-    'assets/jewelry.png',
-    'assets/jewelry.png',
-    'assets/jewelry.png',
-    'assets/jewelry.png',
-    'assets/jewelry.png',
-    'assets/jewelry.png',
-    'assets/jewelry.png',
-    'assets/jewelry.png',
-    'assets/jewelry.png',
-    'assets/jewelry.png',
-    'assets/jewelry.png',
-    'assets/jewelry.png',
-    'assets/jewelry.png',
-    'assets/jewelry.png',
-    'assets/jewelry.png',
-    'assets/jewelry.png',
-    'assets/jewelry.png',
-    'assets/jewelry.png',
-    'assets/jewelry.png',
-    'assets/jewelry.png',
-    'assets/jewelry.png',
-    'assets/jewelry.png',
+    'assets/icon0_muscle.png',
+    'assets/icon1_sun.png',
+    'assets/icon2_moon.png',
+    'assets/icon3_running.png',
+    'assets/icon4_writing.png',
+    'assets/icon5_egg.png',
+    'assets/icon6_barbecue.png',
+    'assets/icon8_icecream.png',
+    'assets/icon9_endocrine.png',
+    'assets/icon10_anti_corrosion.png',
+    'assets/icon11_fruit.png',
+    'assets/icon12_milkjuice.png',
+    'assets/icon13_game.png',
+    'assets/icon14_sport.png',
+    'assets/icon15_balanceweight.png',
+    'assets/icon16_twocode.png',
+    'assets/icon18_beer.png',
+    'assets/icon19_comments.png',
+    'assets/icon20_book.png',
+    'assets/icon22_purenatural.png',
+    'assets/icon24_teeth.png',
+    'assets/icon25_thinking.png',
+    'assets/icon26_candy.png',
+    'assets/icon28_skin.png',
+    'assets/icon7_code.png',
+    'assets/icon17_chafing_dish.png',
+    'assets/icon001_game2.png',
+    'assets/icon002_message.png',
+    'assets/icon003_love.png',
+
   ];
   List iv = [
-    "早睡",
-    "早起",
-    "八杯水",
-    "运动",
     "健身",
+    "早起",
+    "早睡",
     "跑步",
-    "戒糖",
-    "戒酒",
-    "戒奶茶",
-    "戒零食",
+    "写作",
+    "吃早餐",
     "戒夜宵",
-    "33312",
-    "11113",
-    "22214",
-    "33315",
-    "11116",
-    "22217",
-    "33318",
-    "11119",
-    "22220",
-    "33321",
-    "11122",
-    "22223",
-    "33324",
+    "戒零食",
+    "戒撸",
+    "八杯水",
+    "吃水果",
+    "戒奶茶",
+    "戒游戏",
+    "运动",
+    "减重",
+    "学英语",
+    "戒酒",
+    "不联系ta",
+    "看书",
+    "浇花",
+    "刷牙",
+    "冥想",
+    "戒糖",
+    "护肤",
   ];
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -115,7 +116,9 @@ class AddPlanState extends State<NewPlanPage> {
                       ),
                     ],
                   ),
-                  onPressed: () {},
+                  onPressed: () {
+                    iconMarketDialog();
+                  },
                 ),
               ),
               new Expanded(
@@ -201,10 +204,17 @@ class AddPlanState extends State<NewPlanPage> {
               ],
             ),
           ),
+          new Container(
+            margin: const EdgeInsets.only(top: 15),
+            child: new Text(
+              "常用计划",
+              style: new TextStyle(color: Colors.blueAccent),
+            ),
+          ),
           new Expanded(
               child: new Container(
                   padding: const EdgeInsets.only(
-                      left: 12.0, right: 12.0, bottom: 12, top: 12),
+                      left: 12.0, right: 12.0, bottom: 12),
                   child: new Card(
                     shape: new BeveledRectangleBorder(
                       borderRadius: BorderRadius.circular(10.0),
@@ -219,7 +229,7 @@ class AddPlanState extends State<NewPlanPage> {
                         right: 10.0,
                         top: 10.0,
                       ),
-                      mainAxisSpacing: 3.5,
+                      mainAxisSpacing: 2,
                       crossAxisSpacing: 3.5,
                       children: gridItemBuild(
                           ic.length > iv.length ? iv.length : ic.length),
@@ -236,6 +246,43 @@ class AddPlanState extends State<NewPlanPage> {
       w.add(gridItem(i));
     }
     return w;
+  }
+
+  List<Widget> iconRowItem(int num){
+    List<Widget> list=[];
+    for(int i=0;i<4&&i<ic.length-num;i++){
+      list.add(new TextButton(
+        onPressed: () {
+          setState(() {
+            inputIcon=ic[i+num];
+          });
+          Navigator.pop(context);
+        },
+        child: new Image.asset(
+          ic[i+num],
+          height:28,
+          width: 28,
+        ),
+      ),);
+    }
+    return list;
+  }
+  iconMarketDialog() async {
+    List<Widget> iconList = [];
+    for (int i = 0; i < ic.length; i+=4) {
+        iconList.add(new Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: iconRowItem(i),
+        ));
+    }
+    return await showDialog(
+        context: context,
+        builder: (context) {
+          return SimpleDialog(
+
+            children: iconList,
+          );
+        });
   }
 
   Widget gridItem(int num) {
@@ -297,8 +344,8 @@ class AddPlanState extends State<NewPlanPage> {
                   keyboardType: TextInputType.phone,
                   inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                   maxLength: selectedCircle,
-                  onChanged: (result){
-                    inputFrequency=int.parse(result);
+                  onChanged: (result) {
+                    inputFrequency = int.parse(result);
                   },
                   controller: TextEditingController.fromValue(TextEditingValue(
                       text: inputFrequency.toString(),
@@ -323,6 +370,7 @@ class AddPlanState extends State<NewPlanPage> {
             ],
           );
   }
+
   void sendInputLine(int num) {
     setState(() {
       inputText = iv[num];
@@ -330,45 +378,47 @@ class AddPlanState extends State<NewPlanPage> {
     });
   }
 
-  void savePlan() async{
-    if(inputText.isEmpty){
+  void savePlan() async {
+    if (inputText.isEmpty) {
       showMyToast("Title can not be empty.");
       return;
     }
-    if(selectedCircle==1&&inputFrequency>7){
+    if (selectedCircle == 1 && inputFrequency > 7) {
       showMyToast("There are only 7 days in a week at most.");
       return;
     }
-    if(selectedCircle==2&&inputFrequency>31){
+    if (selectedCircle == 2 && inputFrequency > 31) {
       showMyToast("There are only 31 days in a month at most.");
       return;
     }
-    if(selectedCircle==3&&inputFrequency>365){
+    if (selectedCircle == 3 && inputFrequency > 365) {
       showMyToast("You are only allowed to set 365 days in a year frequency.");
       return;
     }
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    if( prefs.containsKey(inputText)){
-      showMyToast("There is already had same plan, you can change a name of this plan.");
+    if (prefs.containsKey(inputText)) {
+      showMyToast(
+          "There is already had same plan, you can change a name of this plan.");
       return;
     }
 
-    List<String> startData=[];
-    startData.add(inputIcon);
-    startData.add("$selectedCircle-$inputFrequency");
-
+    List<String> startData = [];
+    startData.add(inputIcon); //list[0]图标
+    startData.add("$selectedCircle-$inputFrequency"); //list[1] 频率（天周月年 - 天）
+    startData.add(DateTime.now().toString().substring(0, 10)); //list[2]创建日期
+    startData.add("value1"); //预置数据位
+    startData.add("value2");
     prefs.setStringList(inputText, startData);
     Navigator.pop(context, true);
   }
 
-  void showMyToast(String text){
+  void showMyToast(String text) {
     Fluttertoast.showToast(
         msg: text,
         toastLength: Toast.LENGTH_SHORT,
         timeInSecForIosWeb: 1,
         backgroundColor: Colors.black54,
         textColor: Colors.white,
-        fontSize: 16.0
-    );
+        fontSize: 16.0);
   }
 }

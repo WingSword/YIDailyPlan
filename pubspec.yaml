@@ -33,6 +33,7 @@ dependencies:
   # add this line to your dependencies
   fluttertoast: ^8.0.6
   like_button: ^2.0.2
+  just_audio: ^0.7.4
 
 dev_dependencies:
   flutter_test:
@@ -49,12 +50,41 @@ flutter:
   # the material Icons class.
   uses-material-design: true
   assets:
-    - assets/jewelry.png
     - assets/bg_item_000.jpg
     - assets/bg_item_001.jpg
     - assets/bg_item_002.jpg
     - assets/bg_item_003.jpg
     - assets/bg_item_004.jpg
+    - assets/icon0_muscle.png
+    - assets/icon1_sun.png
+    - assets/icon2_moon.png
+    - assets/icon3_running.png
+    - assets/icon4_writing.png
+    - assets/icon5_egg.png
+    - assets/icon6_barbecue.png
+    - assets/icon7_code.png
+    - assets/icon8_icecream.png
+    - assets/icon9_endocrine.png
+    - assets/icon10_anti_corrosion.png
+    - assets/icon11_fruit.png
+    - assets/icon12_milkjuice.png
+    - assets/icon13_game.png
+    - assets/icon14_sport.png
+    - assets/icon15_balanceweight.png
+    - assets/icon16_twocode.png
+    - assets/icon17_chafing_dish.png
+    - assets/icon18_beer.png
+    - assets/icon19_comments.png
+    - assets/icon20_book.png
+    - assets/icon002_message.png
+    - assets/icon22_purenatural.png
+    - assets/icon001_game2.png
+    - assets/icon24_teeth.png
+    - assets/icon25_thinking.png
+    - assets/icon26_candy.png
+    - assets/icon003_love.png
+    - assets/icon28_skin.png
+    - assets/test.wav
   # To add assets to your application, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg

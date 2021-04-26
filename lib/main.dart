@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:just_audio/just_audio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:yi_daily_plan/newplan.dart';
@@ -31,8 +32,11 @@ enum barItemName { one, two, three }
 
 class HomePageState extends State<HomePage> {
   String focusedTitle = "";
+  bool appStart = true;
   final List<String> allItemTitle = [];
   final allItem = new Map<String, List<String>>();
+  final headCount = 5;
+  final audioPlayer= new AudioPlayer();
   final monthEnglish = <String>[
     'January',
     'February',
@@ -48,7 +52,9 @@ class HomePageState extends State<HomePage> {
     'December'
   ];
   final currentDate = DateTime.now().year.toString() +
-      DateTime.now().month.toString() +
+      (DateTime.now().month < 10
+          ? "0" + DateTime.now().month.toString()
+          : DateTime.now().month.toString()) +
       DateTime.now().day.toString();
   final DateTime currentTime = DateTime.now();
 
@@ -61,12 +67,15 @@ class HomePageState extends State<HomePage> {
         allItem.putIfAbsent(str, () => prefs.getStringList(str));
       }
     }
+    if (appStart){
+      appStart=false;
+      setState(() {});
+    }
   }
 
   void changeItemData(String key, bool isDeleteItem) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    // prefs.remove(key);
-    if (!isDeleteItem) prefs.setStringList(key, allItem[key]);
+    isDeleteItem ? prefs.remove(key) : prefs.setStringList(key, allItem[key]);
   }
 
   @override
@@ -137,15 +146,23 @@ class HomePageState extends State<HomePage> {
         padding: const EdgeInsets.only(left: 2.0, right: 2.0),
         child: new Column(
           children: [
-            new Text((dateCalculate(weekday, false)).toString(),
-                style: new TextStyle(fontSize: 16)),
+            new Text((dateCalculate(weekday, false)),
+                style: new TextStyle(
+                    fontSize: 16,
+                    color: int.parse(dateCalculate(weekday, false)) ==
+                            currentTime.day
+                        ? Colors.amber
+                        : Colors.blueGrey)),
             new Icon(
-              allItem.containsKey(title) &&
-                      allItem[title].contains(dateCalculate(weekday, true))
-                  ? Icons.wb_sunny
-                  : Icons.wb_sunny_outlined,
-              size: 20,
-            )
+                allItem.containsKey(title) &&
+                        allItem[title].contains(dateCalculate(weekday, true))
+                    ? Icons.wb_sunny
+                    : Icons.wb_sunny_outlined,
+                size: 20,
+                color:
+                    int.parse(dateCalculate(weekday, false)) == currentTime.day
+                        ? Colors.amber
+                        : Colors.blueGrey)
           ],
         ),
       ));
@@ -158,25 +175,33 @@ class HomePageState extends State<HomePage> {
         allItem[title].contains(dateCalculate(DateTime.now().weekday, true));
     return new Container(
       margin: EdgeInsets.only(top: 5, bottom: 5),
-      padding: EdgeInsets.only(top: 5, bottom: 5),
+      padding: EdgeInsets.only(top: 3),
       decoration: new BoxDecoration(
         borderRadius: new BorderRadius.all(new Radius.circular(5)),
         image: new DecorationImage(
           image: new AssetImage("assets/bg_item_004.jpg"),
           fit: BoxFit.cover,
-          //这里是从assets静态文件中获取的，也可以new NetworkImage(）从网络上获取
         ),
       ),
       child: new Stack(
         children: [
           new Offstage(
             offstage: false,
-            child: new ListTile(
-              title: new Row(
+            child: new TextButton(
+              child: new Row(
                 children: [
-                  new Image.asset(
-                    'assets/jewelry.png',
-                    height: 28,
+                  new Container(
+                    child: new Image.asset(
+                      allItem[title][0],
+                      height: 28,
+                    ),
+                    decoration: new BoxDecoration(
+                        borderRadius:
+                            new BorderRadius.all(new Radius.circular(20)),
+                        border:
+                            new Border.all(color: Colors.black54, width: 2.5),
+                        color: Colors.white70),
+                    padding: const EdgeInsets.all(2),
                   ),
                   new Expanded(
                       child: new Column(
@@ -188,13 +213,16 @@ class HomePageState extends State<HomePage> {
                           child: new Text(
                             title,
                             style: new TextStyle(
-                              color: Colors.black,
-                              fontSize: 17,
+                              color: Colors.blue,
+                              fontSize: 18,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                         ),
                         new Container(
+                            decoration:
+                                new BoxDecoration(color: Colors.white54),
+                            margin: const EdgeInsets.all(2),
                             padding: const EdgeInsets.only(
                                 bottom: 5.0, left: 12.0, top: 5.0),
                             child: new Row(children: buildItemCalender(title))),
@@ -209,6 +237,9 @@ class HomePageState extends State<HomePage> {
                       );
                     },
                     onTap: (bool isLiked) async {
+                      if(isLiked){
+                        audioPlayer.setAsset('assets/test.wav');
+                      }
                       setState(() {
                         isLiked
                             ? allItem[title].remove(currentDate)
@@ -217,24 +248,19 @@ class HomePageState extends State<HomePage> {
                       });
                       return !isLiked;
                     },
-
-                    // onPressed: () {
-                    //   setState(() {
-                    //     alreadyCheckedToday
-                    //         ? allItem[title].remove(currentDate)
-                    //         : allItem[title].add(currentDate);
-                    //     changeItemData(title, false);
-                    //   });
-                    // },
                   ),
                 ],
               ),
-              onTap: () {
+              onPressed: () {
+                setState(() {
+                  focusedTitle = "";
+                });
+              },
+              onLongPress: () {
                 setState(() {
                   focusedTitle = focusedTitle == title ? "" : title;
                 });
               },
-              onLongPress: () {},
             ),
           ),
           itemTapMenu(title)
@@ -245,9 +271,16 @@ class HomePageState extends State<HomePage> {
 
   Widget insistedCountView(String title) {
     return new Container(
-      padding: const EdgeInsets.only(bottom: 5.0, top: 5.0),
-      child: new Text("Insisted on ${allItem[title].length - 2} days",
-          style: new TextStyle(color: Colors.black, fontSize: 15)),
+      decoration: new BoxDecoration(
+          color: Colors.black54,
+          borderRadius: new BorderRadius.all(Radius.circular(10))),
+      margin: const EdgeInsets.only(top: 5),
+      padding: const EdgeInsets.all(3),
+      child: new Text("已坚持 ${allItem[title].length - headCount} 天",
+          style: new TextStyle(
+              color: Colors.white70,
+              fontSize: 13,
+              fontWeight: FontWeight.bold)),
     );
   }
 
@@ -333,6 +366,8 @@ class HomePageState extends State<HomePage> {
       allItem.remove(title);
       allItemTitle.remove(title);
       changeItemData(title, true);
+    } else if (index == 2) {
+      makeUpPlan(title);
     }
     focusedTitle = "";
     setState(() {});
@@ -348,7 +383,9 @@ class HomePageState extends State<HomePage> {
     if (currentTime.day - currentTime.weekday + weekday > 0) {
       return all
           ? currentTime.year.toString() +
-              currentTime.month.toString() +
+              (currentTime.month < 10
+                  ? "0${currentTime.month}"
+                  : currentTime.month.toString()) +
               (currentTime.day - currentTime.weekday + weekday).toString()
           : (currentTime.day - currentTime.weekday + weekday).toString();
     }
@@ -367,14 +404,134 @@ class HomePageState extends State<HomePage> {
     }
     int tempYear =
         currentTime.month == 1 ? currentTime.year - 1 : currentTime.year;
-    int tempMonth = currentTime.month == 1 ? 12 : currentTime.month - 1;
+    String tempMonth = "12";
+    if (currentTime.month != 1) {
+      if (currentTime.month - 1 < 10)
+        tempMonth = "0${currentTime.month - 1}";
+      else
+        tempMonth = "${currentTime.month - 1}";
+    }
     return all
         ? tempYear.toString() +
-            tempMonth.toString() +
+            tempMonth +
             (dayOfMonth + currentTime.day - currentTime.weekday + weekday)
                 .toString()
         : (dayOfMonth + currentTime.day - currentTime.weekday + weekday)
             .toString();
+  }
+
+  makeUpPlan(String title) async {
+    return await showDialog(
+        context: context,
+        builder: (context) {
+          return SimpleDialog(
+            title: new Row(
+              children: [
+                new Container(
+                  child: new Image.asset(
+                    allItem[title][0],
+                    height: 28,
+                  ),
+                  decoration: new BoxDecoration(
+                      borderRadius:
+                          new BorderRadius.all(new Radius.circular(20)),
+                      border: new Border.all(color: Colors.black54, width: 2.5),
+                      color: Colors.white70),
+                  padding: const EdgeInsets.all(2),
+                  margin: const EdgeInsets.only(right: 20),
+                ),
+                new Text("补卡: " + title),
+              ],
+            ),
+            children: makeUpDialogItem(title),
+          );
+        });
+  }
+
+  List<Widget> makeUpDialogItem(String title) {
+    List<Widget> list = [];
+    final countOfMakeUp = 3;
+    for (int i = 1; i <= countOfMakeUp; i++) {
+      final alreadyChecked =
+          allItem[title].contains(dateCalculate(currentTime.weekday - i, true));
+      list.add(new Container(
+        margin: EdgeInsets.only(left: 10, right: 10, top: 5, bottom: 5),
+        decoration: new BoxDecoration(
+            border: new Border.all(color: Colors.lime, width: 3),
+            borderRadius: new BorderRadius.all(new Radius.circular(5)),
+            color: Colors.white30),
+        child: new TextButton(
+          onPressed: () {},
+          child: new Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              new Container(
+                child: new Text(
+                  textChange(dateCalculate(currentTime.weekday - i, true)),
+                  style:
+                      new TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                margin: const EdgeInsets.only(left: 20),
+              ),
+              new Container(
+                margin: const EdgeInsets.only(right: 10),
+                child: new LikeButton(
+                  isLiked: alreadyChecked,
+                  likeBuilder: (bool isLiked) {
+                    return new Icon(
+                      isLiked ? Icons.check_circle : Icons.check_circle_outline,
+                      size: 32,
+                    );
+                  },
+                  circleColor:
+                      CircleColor(start: Colors.green, end: Colors.greenAccent),
+                  bubblesColor: BubblesColor(
+                    dotPrimaryColor: Colors.lightGreenAccent,
+                    dotSecondaryColor: Colors.lightGreen,
+                  ),
+                  onTap: (bool isLiked) async {
+                    setState(() {
+                      isLiked
+                          ? allItem[title].remove(
+                              dateCalculate(currentTime.weekday - i, true))
+                          : allItem[title].add(
+                              dateCalculate(currentTime.weekday - i, true));
+                      changeItemData(title, false);
+                    });
+                    return !isLiked;
+                  },
+                ),
+              )
+            ],
+          ),
+        ),
+      ));
+    }
+    return list;
+  }
+
+  String textChange(String date) {
+    if (int.parse(dateCalculate(currentTime.weekday, true)) - int.parse(date) ==
+        1) {
+      return "昨天";
+    }
+    if (int.parse(dateCalculate(currentTime.weekday, true)) - int.parse(date) ==
+        2) {
+      return "前天";
+    }
+    if (int.parse(dateCalculate(currentTime.weekday, true)) - int.parse(date) ==
+        -1) {
+      return "明天";
+    }
+    if (int.parse(dateCalculate(currentTime.weekday, true)) - int.parse(date) ==
+        -2) {
+      return "后天";
+    }
+    if (int.parse(dateCalculate(currentTime.weekday, true)) - int.parse(date) ==
+        0) {
+      return "今天";
+    }
+    return "${date.substring(0, 4)}年${date.substring(4, 6)}月${date.substring(6)}日";
   }
 
   void gotoPlanInfo(String w) {}
