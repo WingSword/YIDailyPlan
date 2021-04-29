@@ -93,6 +93,11 @@ class AddPlanState extends State<NewPlanPage> {
             },
           )
         ],
+        shape: new RoundedRectangleBorder(
+            side: new BorderSide(width: 3,color: Colors.amber),
+            borderRadius: new BorderRadius.all(new Radius.circular(20))
+        ),
+        backgroundColor: Colors.amberAccent,
       ),
       body: new Column(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -296,9 +301,9 @@ class AddPlanState extends State<NewPlanPage> {
           onPressed: () {
             sendInputLine(num);
           },
-          child: new Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.center,
+          child: new Wrap(
+
+            crossAxisAlignment: WrapCrossAlignment.center,
             children: [
               new Image.asset(
                 ic[num],
@@ -309,7 +314,7 @@ class AddPlanState extends State<NewPlanPage> {
                 child: new Text(
                   iv[num],
                   style: new TextStyle(
-                      fontSize: 14,
+                      fontSize: 13,
                       fontWeight: FontWeight.bold,
                       color: Colors.black),
                 ),

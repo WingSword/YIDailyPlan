@@ -1,11 +1,13 @@
 import 'dart:math';
 
+import 'package:flutter/cupertino.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:yi_daily_plan/newplan.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:like_button/like_button.dart';
+import 'package:yi_daily_plan/planinfo.dart';
 
 void main() => runApp(new MyApp());
 
@@ -13,11 +15,14 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return new MaterialApp(
+      initialRoute: "/",
       title: 'Welcome to Flutter',
       theme: new ThemeData(primaryColor: Colors.white),
-      home: new HomePage(),
+      //home: new HomePage(),
       routes: <String, WidgetBuilder>{
+        "/": (context) => HomePage(), //注册首页路由
         '/newPlan': (BuildContext context) => NewPlanPage(),
+        '/planInfo': (BuildContext context) => PlanInfoPage()
       },
     );
   }
@@ -36,7 +41,7 @@ class HomePageState extends State<HomePage> {
   final List<String> allItemTitle = [];
   final allItem = new Map<String, List<String>>();
   final headCount = 5;
-  final audioPlayer= new AudioPlayer();
+  final audioPlayer = new AudioPlayer();
   final monthEnglish = <String>[
     'January',
     'February',
@@ -67,8 +72,8 @@ class HomePageState extends State<HomePage> {
         allItem.putIfAbsent(str, () => prefs.getStringList(str));
       }
     }
-    if (appStart){
-      appStart=false;
+    if (appStart) {
+      appStart = false;
       setState(() {});
     }
   }
@@ -83,24 +88,13 @@ class HomePageState extends State<HomePage> {
     refreshListData();
     return new Scaffold(
       appBar: new AppBar(
-        title: new Text(
+        title:new Text(
           monthEnglish[currentTime.month - 1] +
               "." +
               currentTime.day.toString(),
           style: new TextStyle(color: Colors.black),
         ),
         actions: <Widget>[
-          new IconButton(
-            icon: new Icon(Icons.add),
-            onPressed: () {
-              Navigator.pushNamed(context, '/newPlan').then((value) {
-                refreshListData();
-                setState(() {});
-              });
-            },
-            color: Colors.black,
-            iconSize: 32,
-          ),
           new PopupMenuButton<barItemName>(
               icon: new Icon(
                 Icons.account_circle,
@@ -113,17 +107,22 @@ class HomePageState extends State<HomePage> {
                 });
               },
               itemBuilder: (BuildContext context) =>
-                  <PopupMenuEntry<barItemName>>[
-                    const PopupMenuItem<barItemName>(
-                      value: barItemName.one,
-                      child: Text('统计'),
-                    ),
-                    const PopupMenuItem<barItemName>(
-                        value: barItemName.two, child: Text('222')),
-                    const PopupMenuItem<barItemName>(
-                        value: barItemName.three, child: Text('333')),
-                  ])
+              <PopupMenuEntry<barItemName>>[
+                const PopupMenuItem<barItemName>(
+                  value: barItemName.one,
+                  child: Text('统计'),
+                ),
+                const PopupMenuItem<barItemName>(
+                    value: barItemName.two, child: Text('222')),
+                const PopupMenuItem<barItemName>(
+                    value: barItemName.three, child: Text('333')),
+              ])
         ],
+        shape: new RoundedRectangleBorder(
+          side: new BorderSide(width: 3,color: Colors.amber),
+          borderRadius: new BorderRadius.all(new Radius.circular(20))
+        ),
+        backgroundColor: Colors.amberAccent,
       ),
       body: buildSuggestion(),
     );
@@ -131,12 +130,31 @@ class HomePageState extends State<HomePage> {
 
   Widget buildSuggestion() {
     print("当前item数：${allItemTitle.length}---${DateTime.now()}");
-    return new ListView.builder(
-        padding: const EdgeInsets.all(8.0),
-        itemCount: allItemTitle.length,
-        itemBuilder: (context, i) {
-          return buildListRaw(allItemTitle[i]);
-        });
+    return new Stack(
+      children: [
+        new ListView.builder(
+            padding: const EdgeInsets.all(8.0),
+            itemCount: allItemTitle.length,
+            itemBuilder: (context, i) {
+              return buildListRaw(allItemTitle[i]);
+            }),
+        new Container(
+          alignment: Alignment.bottomRight,
+          margin: const EdgeInsets.only(bottom: 20,right: 35),
+          child: new FloatingActionButton(
+            onPressed: () {
+              Navigator.pushNamed(context, '/newPlan').then((value) {
+                refreshListData();
+                setState(() {});
+              });
+            },
+            foregroundColor: Colors.white,
+            backgroundColor: Colors.amber,
+            child: new Icon(Icons.add),
+          ),
+        )
+      ],
+    );
   }
 
   List<Widget> buildItemCalender(String title) {
@@ -179,7 +197,7 @@ class HomePageState extends State<HomePage> {
       decoration: new BoxDecoration(
         borderRadius: new BorderRadius.all(new Radius.circular(5)),
         image: new DecorationImage(
-          image: new AssetImage("assets/bg_item_004.jpg"),
+          image: new AssetImage("assets/bg_item_001.jpg"),
           fit: BoxFit.cover,
         ),
       ),
@@ -237,7 +255,7 @@ class HomePageState extends State<HomePage> {
                       );
                     },
                     onTap: (bool isLiked) async {
-                      if(isLiked){
+                      if (isLiked) {
                         audioPlayer.setAsset('assets/test.wav');
                       }
                       setState(() {
@@ -253,7 +271,11 @@ class HomePageState extends State<HomePage> {
               ),
               onPressed: () {
                 setState(() {
-                  focusedTitle = "";
+                  if (focusedTitle == title)
+                    focusedTitle = "";
+                  else
+                    Navigator.of(context)
+                        .pushNamed("/planInfo", arguments: title);
                 });
               },
               onLongPress: () {
@@ -268,6 +290,7 @@ class HomePageState extends State<HomePage> {
       ),
     );
   }
+
 
   Widget insistedCountView(String title) {
     return new Container(

@@ -48,7 +48,6 @@ flutter:
   # the material Icons class.
   uses-material-design: true
   assets:
-    - assets/bg_item_000.jpg
     - assets/bg_item_001.jpg
     - assets/bg_item_002.jpg
     - assets/bg_item_003.jpg
