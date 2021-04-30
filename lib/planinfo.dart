@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:table_calendar/table_calendar.dart';
+
+import 'main.dart';
 
 class PlanInfoPage extends StatefulWidget {
   @override
@@ -46,11 +49,33 @@ class PlanInfoState extends State<PlanInfoPage> {
                       maxLines: 1),
                 ],
               )),
+          actions: <Widget>[
+            new PopupMenuButton<barItemName>(
+                iconSize: 28,
+                onSelected: (barItemName result) {
+                  if (result.index == 0) {
+                  } else if (result.index == 1) {
+                  } else if (result.index == 2) {}
+                  setState(() {});
+                },
+                itemBuilder: (BuildContext context) =>
+                    <PopupMenuEntry<barItemName>>[
+                      const PopupMenuItem<barItemName>(
+                        value: barItemName.one,
+                        child: Text('修改当前计划名称或图标'),
+                      ),
+                      const PopupMenuItem<barItemName>(
+                          value: barItemName.two, child: Text('补卡')),
+                      const PopupMenuItem<barItemName>(
+                          value: barItemName.three, child: Text('放弃计划')),
+                    ])
+          ],
           shape: new RoundedRectangleBorder(
               side: new BorderSide(width: 3, color: Colors.amber),
               borderRadius: new BorderRadius.all(new Radius.circular(20))),
           backgroundColor: Colors.amberAccent,
         ),
+        backgroundColor: Colors.white,
         body: planInfoBody());
   }
 
@@ -63,6 +88,7 @@ class PlanInfoState extends State<PlanInfoPage> {
         child: new Column(
           children: [
             progress(),
+            calender(),
           ],
         ));
   }
@@ -70,12 +96,15 @@ class PlanInfoState extends State<PlanInfoPage> {
   Widget progress() {
     if (frequency == 0) return new Container();
     return new Container(
+        margin: EdgeInsets.only(bottom: 20),
         child: new Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
         new Container(
           child: new Text(
-            frequency==1?"本周已完成$progressDay天":"已完成$finishedFrequency个周期，当前周期进度$progressDay/$frequencyDay",
+            frequency == 1
+                ? "本周已完成$progressDay天"
+                : "已完成$finishedFrequency个周期，当前周期进度$progressDay/$frequencyDay",
             style: new TextStyle(fontWeight: FontWeight.bold),
           ),
           margin: const EdgeInsets.only(right: 15),
@@ -116,25 +145,25 @@ class PlanInfoState extends State<PlanInfoPage> {
       }
     }
     progressDay = numerator;
-    int tempFre=0;
-    int temp=0;
-    int stringSub=0;
+    int tempFre = 0;
+    int temp = 0;
+    int stringSub = 0;
     for (int i = 0; i < tempList.length; i++) {
       list.add(int.parse(tempList[i]));
-      if(frequency==2){
-         stringSub=int.parse(tempList[i].substring(4,6));
-      }else if(frequency==3){
-        stringSub=int.parse(tempList[i].substring(0,4));
+      if (frequency == 2) {
+        stringSub = int.parse(tempList[i].substring(4, 6));
+      } else if (frequency == 3) {
+        stringSub = int.parse(tempList[i].substring(0, 4));
       }
-      if(temp==stringSub){
+      if (temp == stringSub) {
         tempFre++;
-      }else{
-        if(tempFre>=frequencyDay){
+      } else {
+        if (tempFre >= frequencyDay) {
           finishedFrequency++;
         }
-        tempFre=0;
+        tempFre = 0;
       }
-      temp=stringSub;
+      temp = stringSub;
     }
     if (isStart) {
       isStart = false;
@@ -169,5 +198,84 @@ class PlanInfoState extends State<PlanInfoPage> {
         (DateTime.now().month - 6 - 1 * 30) +
         DateTime.now().day +
         ((DateTime.now().month - 7) ~/ 2);
+  }
+
+  final weekDays = ["日", "一", "二", "三", "四", "五", "六"];
+
+  Widget calenderDay(DateTime day) {
+    double dayRadius1 = 0;
+    double dayRadius2 = 0;
+    if (day.weekday == 7 ||
+        (day.weekday != 7 &&
+            !list.contains(day.year * 10000 + day.month * 100 + day.day - 1))) {
+      dayRadius1 = 25;
+    }
+    if (day.weekday == 6 ||
+        (day.weekday != 6 &&
+            !list.contains(day.year * 10000 + day.month * 100 + day.day + 1))) {
+      dayRadius2 = 25;
+    }
+    return new Container(
+        margin: const EdgeInsets.symmetric(vertical: 10),
+        alignment: Alignment.center,
+        decoration: new BoxDecoration(
+            gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors:
+                    list.contains(day.year * 10000 + day.month * 100 + day.day)
+                        ? [Colors.lightBlueAccent, Colors.greenAccent[700]]
+                        : [Colors.white, Colors.white]),
+            borderRadius: new BorderRadius.horizontal(
+                left: new Radius.circular(dayRadius1),
+                right: new Radius.circular(dayRadius2))),
+        child: Text(
+          day.day.toString(),
+          style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: day.toString().substring(0, 10) ==
+                      DateTime.now().toString().substring(0, 10)
+                  ? Colors.red
+                  : Colors.black),
+        ));
+  }
+
+  Widget calender() {
+    return new Card(
+      shape: new BeveledRectangleBorder(
+        borderRadius: BorderRadius.circular(10.0),
+          side: new BorderSide(color: Colors.black54),
+      ),
+      child: new Container(
+        padding: EdgeInsets.all(5),
+        child:TableCalendar(
+          firstDay: DateTime.utc(list[0] ~/ 10000, 1, 1),
+          lastDay: DateTime.utc(list[list.length - 1] ~/ 10000,
+              DateTime.now().month, daysCalculateUtil(0)),
+          focusedDay: DateTime.now(),
+          headerStyle: new HeaderStyle(
+            formatButtonVisible: false,
+            titleTextStyle:
+            new TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+          ),
+          calendarBuilders: CalendarBuilders(dowBuilder: (context, day) {
+            return Center(
+              child: Text(
+                weekDays[day.weekday % 7],
+                style: TextStyle(
+                    color: day.weekday == DateTime.sunday ||
+                        day.weekday == DateTime.saturday
+                        ? Colors.red
+                        : Colors.black),
+              ),
+            );
+          }, defaultBuilder: (context, day, today) {
+            return calenderDay(day);
+          }, todayBuilder: (context, today, today2) {
+            return calenderDay(today);
+          }),
+        ),
+      )
+    );
   }
 }

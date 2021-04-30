@@ -94,30 +94,30 @@ class HomePageState extends State<HomePage> {
               currentTime.day.toString(),
           style: new TextStyle(color: Colors.black),
         ),
-        actions: <Widget>[
-          new PopupMenuButton<barItemName>(
-              icon: new Icon(
-                Icons.account_circle,
-                color: Colors.black,
-              ),
-              iconSize: 28,
-              onSelected: (barItemName result) {
-                setState(() {
-                  menuDeal(result);
-                });
-              },
-              itemBuilder: (BuildContext context) =>
-              <PopupMenuEntry<barItemName>>[
-                const PopupMenuItem<barItemName>(
-                  value: barItemName.one,
-                  child: Text('统计'),
-                ),
-                const PopupMenuItem<barItemName>(
-                    value: barItemName.two, child: Text('222')),
-                const PopupMenuItem<barItemName>(
-                    value: barItemName.three, child: Text('333')),
-              ])
-        ],
+        // actions: <Widget>[
+        //   new PopupMenuButton<barItemName>(
+        //       icon: new Icon(
+        //         Icons.account_circle,
+        //         color: Colors.black,
+        //       ),
+        //       iconSize: 28,
+        //       onSelected: (barItemName result) {
+        //         setState(() {
+        //           menuDeal(result);
+        //         });
+        //       },
+        //       itemBuilder: (BuildContext context) =>
+        //       <PopupMenuEntry<barItemName>>[
+        //         const PopupMenuItem<barItemName>(
+        //           value: barItemName.one,
+        //           child: Text('统计'),
+        //         ),
+        //         const PopupMenuItem<barItemName>(
+        //             value: barItemName.two, child: Text('222')),
+        //         const PopupMenuItem<barItemName>(
+        //             value: barItemName.three, child: Text('333')),
+        //       ])
+        // ],
         shape: new RoundedRectangleBorder(
           side: new BorderSide(width: 3,color: Colors.amber),
           borderRadius: new BorderRadius.all(new Radius.circular(20))
