@@ -98,26 +98,26 @@ class PlanInfoState extends State<PlanInfoPage> {
     return new Container(
         margin: EdgeInsets.only(bottom: 20),
         child: new Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: [
-        new Container(
-          child: new Text(
-            frequency == 1
-                ? "本周已完成$progressDay天"
-                : "已完成$finishedFrequency个周期，当前周期进度$progressDay/$frequencyDay",
-            style: new TextStyle(fontWeight: FontWeight.bold),
-          ),
-          margin: const EdgeInsets.only(right: 15),
-        ),
-        //进度条显示50%，会显示一个半圆
-        new CircularProgressIndicator(
-          strokeWidth: 8,
-          backgroundColor: Colors.grey[200],
-          valueColor: AlwaysStoppedAnimation(Colors.blue),
-          value: progressDay / frequencyDay,
-        ),
-      ],
-    ));
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            new Container(
+              child: new Text(
+                frequency == 1
+                    ? "本周已完成$progressDay天"
+                    : "已完成$finishedFrequency个周期，当前周期进度$progressDay/$frequencyDay",
+                style: new TextStyle(fontWeight: FontWeight.bold),
+              ),
+              margin: const EdgeInsets.only(right: 15),
+            ),
+            //进度条显示50%，会显示一个半圆
+            new CircularProgressIndicator(
+              strokeWidth: 8,
+              backgroundColor: Colors.grey[200],
+              valueColor: AlwaysStoppedAnimation(Colors.blue),
+              value: progressDay / frequencyDay,
+            ),
+          ],
+        ));
   }
 
   void getCircle(String key) async {
@@ -242,40 +242,39 @@ class PlanInfoState extends State<PlanInfoPage> {
 
   Widget calender() {
     return new Card(
-      shape: new BeveledRectangleBorder(
-        borderRadius: BorderRadius.circular(10.0),
+        shape: new BeveledRectangleBorder(
+          borderRadius: BorderRadius.circular(10.0),
           side: new BorderSide(color: Colors.black54),
-      ),
-      child: new Container(
-        padding: EdgeInsets.all(5),
-        child:TableCalendar(
-          firstDay: DateTime.utc(list[0] ~/ 10000, 1, 1),
-          lastDay: DateTime.utc(list[list.length - 1] ~/ 10000,
-              DateTime.now().month, daysCalculateUtil(0)),
-          focusedDay: DateTime.now(),
-          headerStyle: new HeaderStyle(
-            formatButtonVisible: false,
-            titleTextStyle:
-            new TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-          ),
-          calendarBuilders: CalendarBuilders(dowBuilder: (context, day) {
-            return Center(
-              child: Text(
-                weekDays[day.weekday % 7],
-                style: TextStyle(
-                    color: day.weekday == DateTime.sunday ||
-                        day.weekday == DateTime.saturday
-                        ? Colors.red
-                        : Colors.black),
-              ),
-            );
-          }, defaultBuilder: (context, day, today) {
-            return calenderDay(day);
-          }, todayBuilder: (context, today, today2) {
-            return calenderDay(today);
-          }),
         ),
-      )
-    );
+        child: new Container(
+          padding: EdgeInsets.all(5),
+          child: TableCalendar(
+            firstDay: DateTime.utc(list[0] ~/ 10000, 1, 1),
+            lastDay: DateTime.utc(list[list.length - 1] ~/ 10000,
+                DateTime.now().month, daysCalculateUtil(0)),
+            focusedDay: DateTime.now(),
+            headerStyle: new HeaderStyle(
+              formatButtonVisible: false,
+              titleTextStyle:
+                  new TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+            ),
+            calendarBuilders: CalendarBuilders(dowBuilder: (context, day) {
+              return Center(
+                child: Text(
+                  weekDays[day.weekday % 7],
+                  style: TextStyle(
+                      color: day.weekday == DateTime.sunday ||
+                              day.weekday == DateTime.saturday
+                          ? Colors.red
+                          : Colors.black),
+                ),
+              );
+            }, defaultBuilder: (context, day, today) {
+              return calenderDay(day);
+            }, todayBuilder: (context, today, today2) {
+              return calenderDay(today);
+            }),
+          ),
+        ));
   }
 }
