@@ -70,7 +70,7 @@ class AddPlanState extends State<NewPlanPage> {
     "减重",
     "学英语",
     "戒酒",
-    "不联系ta",
+    "不联系t",
     "看书",
     "浇花",
     "刷牙",

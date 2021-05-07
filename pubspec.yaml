@@ -31,7 +31,7 @@ dependencies:
   # add this line to your dependencies
   fluttertoast: ^8.0.6
   like_button: ^2.0.2
-  just_audio: ^0.7.4
+  just_audio: 0.7.4
   table_calendar: ^3.0.0
 
 dev_dependencies:
@@ -82,7 +82,7 @@ flutter:
     - assets/icon26_candy.png
     - assets/icon003_love.png
     - assets/icon28_skin.png
-    - assets/test.wav
+    - assets/ringtone_check.wav
   # To add assets to your application, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg

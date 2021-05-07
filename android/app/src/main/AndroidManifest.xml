@@ -2,7 +2,7 @@
     package="com.example.yi_daily_plan">
    <application
         android:label="一日之计"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/icon_dailyplan2">
         <activity
             android:name=".MainActivity"
             android:launchMode="singleTop"

@@ -55,7 +55,10 @@ class PlanInfoState extends State<PlanInfoPage> {
                 onSelected: (barItemName result) {
                   if (result.index == 0) {
                   } else if (result.index == 1) {
-                  } else if (result.index == 2) {}
+                  } else if (result.index == 2) {
+                    giveUpPlan();
+                    Navigator.pop(context,true);
+                  }
                   setState(() {});
                 },
                 itemBuilder: (BuildContext context) =>
@@ -120,7 +123,13 @@ class PlanInfoState extends State<PlanInfoPage> {
         ));
   }
 
+  void giveUpPlan() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.remove(titleName);
+  }
+
   void getCircle(String key) async {
+    list.clear();
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     titleIcon = sharedPreferences.getStringList(key)[0];
     frequency =
@@ -134,8 +143,8 @@ class PlanInfoState extends State<PlanInfoPage> {
     int numerator = 0;
 
     for (int i = tempList.length >=
-                (frequency == 2 ? DateTime.now().day : daysCalculateUtil(2))
-            ? tempList.length - numerator
+                (frequency == 2 ?  daysCalculateUtil(2):daysCalculateUtil(1))
+            ? tempList.length - (frequency == 2 ?  daysCalculateUtil(2):daysCalculateUtil(1))
             : 0;
         i < tempList.length;
         i++) {
@@ -165,6 +174,15 @@ class PlanInfoState extends State<PlanInfoPage> {
       }
       temp = stringSub;
     }
+    print(":${list[0]}");
+    print(":${list[1]}");
+    print(":${list[2]}");
+    print(":${tempList[3]}");
+    print(":${list[4]}");
+    print(":${list[5]}");
+    print(":${list[6]}");
+    print(":${list[7]}");
+
     if (isStart) {
       isStart = false;
       setState(() {});
@@ -192,7 +210,6 @@ class PlanInfoState extends State<PlanInfoPage> {
           DateTime.now().day +
           (DateTime.now().month > 2 ? yearDay - 367 : 0);
     }
-
     return yearDay -
         184 +
         (DateTime.now().month - 6 - 1 * 30) +
@@ -249,9 +266,9 @@ class PlanInfoState extends State<PlanInfoPage> {
         child: new Container(
           padding: EdgeInsets.all(5),
           child: TableCalendar(
-            firstDay: DateTime.utc(list[0] ~/ 10000, 1, 1),
-            lastDay: DateTime.utc(list[list.length - 1] ~/ 10000,
-                DateTime.now().month, daysCalculateUtil(0)),
+            firstDay: DateTime.utc(list.length>0?list[0] ~/ 10000:DateTime.now().year, 1, 1),
+            lastDay: DateTime.utc(DateTime.now().year,
+                DateTime.now().month, 31),
             focusedDay: DateTime.now(),
             headerStyle: new HeaderStyle(
               formatButtonVisible: false,

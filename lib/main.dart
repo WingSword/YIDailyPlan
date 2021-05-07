@@ -1,9 +1,11 @@
+import 'dart:io';
 import 'dart:math';
+import 'dart:typed_data';
 
 import 'package:flutter/cupertino.dart';
-import 'package:just_audio/just_audio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:just_audio/just_audio.dart';
 import 'package:yi_daily_plan/newplan.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:like_button/like_button.dart';
@@ -42,6 +44,7 @@ class HomePageState extends State<HomePage> {
   final allItem = new Map<String, List<String>>();
   final headCount = 5;
   final audioPlayer = new AudioPlayer();
+  var mavUri;
   final monthEnglish = <String>[
     'January',
     'February',
@@ -60,7 +63,9 @@ class HomePageState extends State<HomePage> {
       (DateTime.now().month < 10
           ? "0" + DateTime.now().month.toString()
           : DateTime.now().month.toString()) +
-      DateTime.now().day.toString();
+      (DateTime.now().day < 10
+          ? "0" + DateTime.now().day.toString()
+          : DateTime.now().day.toString());
   final DateTime currentTime = DateTime.now();
 
   void refreshListData() async {
@@ -85,10 +90,11 @@ class HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    _load();
     refreshListData();
     return new Scaffold(
       appBar: new AppBar(
-        title:new Text(
+        title: new Text(
           monthEnglish[currentTime.month - 1] +
               "." +
               currentTime.day.toString(),
@@ -119,9 +125,8 @@ class HomePageState extends State<HomePage> {
         //       ])
         // ],
         shape: new RoundedRectangleBorder(
-          side: new BorderSide(width: 3,color: Colors.amber),
-          borderRadius: new BorderRadius.all(new Radius.circular(20))
-        ),
+            side: new BorderSide(width: 3, color: Colors.amber),
+            borderRadius: new BorderRadius.all(new Radius.circular(20))),
         backgroundColor: Colors.amberAccent,
       ),
       body: buildSuggestion(),
@@ -140,7 +145,7 @@ class HomePageState extends State<HomePage> {
             }),
         new Container(
           alignment: Alignment.bottomRight,
-          margin: const EdgeInsets.only(bottom: 20,right: 35),
+          margin: const EdgeInsets.only(bottom: 20, right: 35),
           child: new FloatingActionButton(
             onPressed: () {
               Navigator.pushNamed(context, '/newPlan').then((value) {
@@ -255,9 +260,7 @@ class HomePageState extends State<HomePage> {
                       );
                     },
                     onTap: (bool isLiked) async {
-                      if (isLiked) {
-                        audioPlayer.setAsset('assets/test.wav');
-                      }
+                      audioPlayer.play();
                       setState(() {
                         isLiked
                             ? allItem[title].remove(currentDate)
@@ -275,7 +278,11 @@ class HomePageState extends State<HomePage> {
                     focusedTitle = "";
                   else
                     Navigator.of(context)
-                        .pushNamed("/planInfo", arguments: title);
+                        .pushNamed("/planInfo", arguments: title)
+                        .then((value) {
+                      refreshListData();
+                      setState(() {});
+                    });
                 });
               },
               onLongPress: () {
@@ -291,6 +298,9 @@ class HomePageState extends State<HomePage> {
     );
   }
 
+  Future<Null> _load() async {
+    mavUri = await audioPlayer.setAsset('assets/ringtone_check.wav');
+  }
 
   Widget insistedCountView(String title) {
     return new Container(
@@ -383,7 +393,7 @@ class HomePageState extends State<HomePage> {
   void itemTapMenuDeal(String title, int index) {
     if (index == 0) {
       //编辑
-      gotoPlanInfo(title);
+
     } else if (index == 1) {
       //删除
       allItem.remove(title);
@@ -405,11 +415,9 @@ class HomePageState extends State<HomePage> {
   String dateCalculate(int weekday, bool all) {
     if (currentTime.day - currentTime.weekday + weekday > 0) {
       return all
-          ? currentTime.year.toString() +
-              (currentTime.month < 10
-                  ? "0${currentTime.month}"
-                  : currentTime.month.toString()) +
-              (currentTime.day - currentTime.weekday + weekday).toString()
+          ?( currentTime.year*10000 +
+              currentTime.month*100+
+              (currentTime.day - currentTime.weekday + weekday)).toString()
           : (currentTime.day - currentTime.weekday + weekday).toString();
     }
     int dayOfMonth = 31;
@@ -427,17 +435,13 @@ class HomePageState extends State<HomePage> {
     }
     int tempYear =
         currentTime.month == 1 ? currentTime.year - 1 : currentTime.year;
-    String tempMonth = "12";
+    int tempMonth = 12;
     if (currentTime.month != 1) {
-      if (currentTime.month - 1 < 10)
-        tempMonth = "0${currentTime.month - 1}";
-      else
-        tempMonth = "${currentTime.month - 1}";
+        tempMonth =currentTime.month - 1;
     }
     return all
-        ? tempYear.toString() +
-            tempMonth +
-            (dayOfMonth + currentTime.day - currentTime.weekday + weekday)
+        ? (tempYear*10000+tempMonth*100+
+            (dayOfMonth + currentTime.day - currentTime.weekday + weekday))
                 .toString()
         : (dayOfMonth + currentTime.day - currentTime.weekday + weekday)
             .toString();
@@ -513,6 +517,8 @@ class HomePageState extends State<HomePage> {
                     dotSecondaryColor: Colors.lightGreen,
                   ),
                   onTap: (bool isLiked) async {
+                    audioPlayer.play();
+
                     setState(() {
                       isLiked
                           ? allItem[title].remove(
@@ -532,6 +538,8 @@ class HomePageState extends State<HomePage> {
     }
     return list;
   }
+
+  int wavi = 0;
 
   String textChange(String date) {
     if (int.parse(dateCalculate(currentTime.weekday, true)) - int.parse(date) ==
@@ -556,6 +564,4 @@ class HomePageState extends State<HomePage> {
     }
     return "${date.substring(0, 4)}年${date.substring(4, 6)}月${date.substring(6)}日";
   }
-
-  void gotoPlanInfo(String w) {}
 }
