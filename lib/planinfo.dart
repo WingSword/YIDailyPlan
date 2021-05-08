@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:table_calendar/table_calendar.dart';
 
@@ -21,12 +22,12 @@ class PlanInfoState extends State<PlanInfoPage> {
   String titleName = "";
   String titleIcon = '';
   bool isStart = true;
+  int validDay = 3;
 
   @override
   Widget build(BuildContext context) {
     //获取路由参数
     titleName = ModalRoute.of(context).settings.arguments;
-
     return Scaffold(
         appBar: new AppBar(
           title: new TextButton(
@@ -57,7 +58,7 @@ class PlanInfoState extends State<PlanInfoPage> {
                   } else if (result.index == 1) {
                   } else if (result.index == 2) {
                     giveUpPlan();
-                    Navigator.pop(context,true);
+                    Navigator.pop(context, true);
                   }
                   setState(() {});
                 },
@@ -97,7 +98,13 @@ class PlanInfoState extends State<PlanInfoPage> {
   }
 
   Widget progress() {
-    if (frequency == 0) return new Container();
+    if (frequency == 0)
+      return new Container(
+        child: new Text(
+          "${list.contains(DateTime.now().year * 10000 + DateTime.now().month * 100 + DateTime.now().day) ? "今日已完成" : "今天还未完成"},已坚持${list.length}天，继续加油！",
+          style: new TextStyle(fontWeight: FontWeight.bold),
+        ),
+      );
     return new Container(
         margin: EdgeInsets.only(bottom: 20),
         child: new Row(
@@ -107,7 +114,7 @@ class PlanInfoState extends State<PlanInfoPage> {
               child: new Text(
                 frequency == 1
                     ? "本周已完成$progressDay天"
-                    : "已完成$finishedFrequency个周期，当前周期进度$progressDay/$frequencyDay",
+                    : "已完成$finishedFrequency个周期，当前周期进度$progressDay/$frequencyDay${frequency == 2 ? "(每月)" : "(每年)"}",
                 style: new TextStyle(fontWeight: FontWeight.bold),
               ),
               margin: const EdgeInsets.only(right: 15),
@@ -128,8 +135,18 @@ class PlanInfoState extends State<PlanInfoPage> {
     prefs.remove(titleName);
   }
 
-  void getCircle(String key) async {
-    list.clear();
+  void changePlanState(String key) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    List tem0p = prefs.getStringList(titleName);
+    if (tem0p.contains(key)) {
+      tem0p.remove(key);
+    } else {
+      tem0p.add(key);
+    }
+    prefs.setStringList(titleName, tem0p);
+  }
+
+  Future<int> getCircle(String key) async {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     titleIcon = sharedPreferences.getStringList(key)[0];
     frequency =
@@ -138,19 +155,19 @@ class PlanInfoState extends State<PlanInfoPage> {
         int.parse(sharedPreferences.getStringList(key)[1].substring(2));
 
     var tempList = sharedPreferences.getStringList(key).sublist(5);
-
     tempList.sort((left, right) => left.compareTo(right));
     int numerator = 0;
-
-    for (int i = tempList.length >=
-                (frequency == 2 ?  daysCalculateUtil(2):daysCalculateUtil(1))
-            ? tempList.length - (frequency == 2 ?  daysCalculateUtil(2):daysCalculateUtil(1))
-            : 0;
-        i < tempList.length;
-        i++) {
-      if (int.parse(tempList[i]) > DateTime.now().year * 10000) {
-        numerator = tempList.length - i;
-        break;
+    for (int i = tempList.length - 1;
+        i >=
+            (tempList.length - daysCalculateUtil(frequency == 2 ? 2 : 1) > 0
+                ? tempList.length - daysCalculateUtil(frequency == 2 ? 2 : 1)
+                : 0);
+        i--) {
+      if (int.parse(tempList[i]) >
+          (frequency == 2
+              ? DateTime.now().year * 10000 + DateTime.now().month * 100
+              : DateTime.now().year * 10000)) {
+        numerator++;
       }
     }
     progressDay = numerator;
@@ -158,6 +175,9 @@ class PlanInfoState extends State<PlanInfoPage> {
     int temp = 0;
     int stringSub = 0;
     for (int i = 0; i < tempList.length; i++) {
+      if (list.contains(tempList[i])) {
+        continue;
+      }
       list.add(int.parse(tempList[i]));
       if (frequency == 2) {
         stringSub = int.parse(tempList[i].substring(4, 6));
@@ -174,19 +194,12 @@ class PlanInfoState extends State<PlanInfoPage> {
       }
       temp = stringSub;
     }
-    print(":${list[0]}");
-    print(":${list[1]}");
-    print(":${list[2]}");
-    print(":${tempList[3]}");
-    print(":${list[4]}");
-    print(":${list[5]}");
-    print(":${list[6]}");
-    print(":${list[7]}");
-
     if (isStart) {
+      print("${DateTime.now()} 刷新：${list.length}");
       isStart = false;
       setState(() {});
     }
+    return list.length;
   }
 
   //mode=1今年多少天,mode=2今天是今年第多少天,mode=0这个月多少天
@@ -266,9 +279,10 @@ class PlanInfoState extends State<PlanInfoPage> {
         child: new Container(
           padding: EdgeInsets.all(5),
           child: TableCalendar(
-            firstDay: DateTime.utc(list.length>0?list[0] ~/ 10000:DateTime.now().year, 1, 1),
-            lastDay: DateTime.utc(DateTime.now().year,
-                DateTime.now().month, 31),
+            firstDay: DateTime.utc(
+                list.length > 0 ? list[0] ~/ 10000 : DateTime.now().year, 1, 1),
+            lastDay:
+                DateTime.utc(DateTime.now().year, DateTime.now().month, 31),
             focusedDay: DateTime.now(),
             headerStyle: new HeaderStyle(
               formatButtonVisible: false,
@@ -291,7 +305,65 @@ class PlanInfoState extends State<PlanInfoPage> {
             }, todayBuilder: (context, today, today2) {
               return calenderDay(today);
             }),
+            onDayLongPressed: (date1, date2) {
+              if (date1.isBefore(
+                  DateUtils.addDaysToDate(DateTime.now(), -validDay))) {
+                showMyToast("超过$validDay天不能补卡");
+                return;
+              }
+              if (date1.isAfter(DateUtils.addDaysToDate(DateTime.now(), 1))) {
+                showMyToast("只可补今日之前$validDay天的卡");
+                return;
+              }
+              makeUpTip(date1);
+            },
           ),
         ));
+  }
+
+  void showMyToast(String text) {
+    Fluttertoast.showToast(
+        msg: text,
+        toastLength: Toast.LENGTH_SHORT,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.black54,
+        textColor: Colors.white,
+        fontSize: 16.0);
+  }
+
+  makeUpTip(DateTime date) async {
+    String card = "补";
+    if (list.contains(date.year * 10000 + date.month * 100 + date.day)) {
+      card = "取消";
+    }
+    return await showDialog(
+        context: context,
+        builder: (context) {
+          return new AlertDialog(
+            title: new Text(
+                "确定要$card${date.year}年${date.month}月${date.day}日的打卡吗？"),
+            actions: <Widget>[
+              TextButton(
+                  child: Text("取消"),
+                  onPressed: () => Navigator.pop(context, "cancel")),
+              TextButton(
+                  child: Text("确定"),
+                  onPressed: () {
+                    changePlanState(
+                        (date.year * 10000 + date.month * 100 + date.day)
+                            .toString());
+                    if (list.contains(
+                        (date.year * 10000 + date.month * 100 + date.day)))
+                      list.remove(
+                          (date.year * 10000 + date.month * 100 + date.day));
+                    else
+                      list.add(
+                          (date.year * 10000 + date.month * 100 + date.day));
+                    setState(() {});
+                    Navigator.pop(context, "yes");
+                  }),
+            ],
+          );
+        });
   }
 }

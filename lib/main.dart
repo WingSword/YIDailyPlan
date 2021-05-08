@@ -86,6 +86,9 @@ class HomePageState extends State<HomePage> {
   void changeItemData(String key, bool isDeleteItem) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     isDeleteItem ? prefs.remove(key) : prefs.setStringList(key, allItem[key]);
+    setState(() {
+
+    });
   }
 
   @override
