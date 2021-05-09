@@ -5,7 +5,7 @@ import 'dart:typed_data';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:just_audio/just_audio.dart';
+import 'package:yi_daily_plan/model.dart';
 import 'package:yi_daily_plan/newplan.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:like_button/like_button.dart';
@@ -40,10 +40,9 @@ enum barItemName { one, two, three }
 class HomePageState extends State<HomePage> {
   String focusedTitle = "";
   bool appStart = true;
-  final List<String> allItemTitle = [];
-  final allItem = new Map<String, List<String>>();
+  List<String> allItemTitle = [];
+  Map allItem = new Map<String, List<String>>();
   final headCount = 5;
-  final audioPlayer = new AudioPlayer();
   var mavUri;
   final monthEnglish = <String>[
     'January',
@@ -70,8 +69,9 @@ class HomePageState extends State<HomePage> {
 
   void refreshListData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
+    allItemTitle = [];
+    allItem.clear();
     if (prefs.getKeys() != null && prefs.getKeys().isNotEmpty) {
-      allItemTitle.clear();
       allItemTitle.addAll(prefs.getKeys().toList());
       for (String str in allItemTitle) {
         allItem.putIfAbsent(str, () => prefs.getStringList(str));
@@ -86,53 +86,53 @@ class HomePageState extends State<HomePage> {
   void changeItemData(String key, bool isDeleteItem) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     isDeleteItem ? prefs.remove(key) : prefs.setStringList(key, allItem[key]);
-    setState(() {
-
-    });
+    setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
-    _load();
     refreshListData();
     return new Scaffold(
-      appBar: new AppBar(
-        title: new Text(
-          monthEnglish[currentTime.month - 1] +
-              "." +
-              currentTime.day.toString(),
-          style: new TextStyle(color: Colors.black),
+        appBar: new AppBar(
+          title: new Text(
+            monthEnglish[currentTime.month - 1] +
+                "." +
+                currentTime.day.toString(),
+            style: new TextStyle(color: Colors.black),
+          ),
+          shape: new RoundedRectangleBorder(
+              side: new BorderSide(width: 3, color: Colors.amber),
+              borderRadius: new BorderRadius.all(new Radius.circular(20))),
+          backgroundColor: Colors.amberAccent,
         ),
-        // actions: <Widget>[
-        //   new PopupMenuButton<barItemName>(
-        //       icon: new Icon(
-        //         Icons.account_circle,
-        //         color: Colors.black,
-        //       ),
-        //       iconSize: 28,
-        //       onSelected: (barItemName result) {
-        //         setState(() {
-        //           menuDeal(result);
-        //         });
-        //       },
-        //       itemBuilder: (BuildContext context) =>
-        //       <PopupMenuEntry<barItemName>>[
-        //         const PopupMenuItem<barItemName>(
-        //           value: barItemName.one,
-        //           child: Text('统计'),
-        //         ),
-        //         const PopupMenuItem<barItemName>(
-        //             value: barItemName.two, child: Text('222')),
-        //         const PopupMenuItem<barItemName>(
-        //             value: barItemName.three, child: Text('333')),
-        //       ])
-        // ],
-        shape: new RoundedRectangleBorder(
-            side: new BorderSide(width: 3, color: Colors.amber),
-            borderRadius: new BorderRadius.all(new Radius.circular(20))),
-        backgroundColor: Colors.amberAccent,
+        body: buildSuggestion(),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+
+      floatingActionButton:new FloatingActionButton(
+        onPressed: () {
+          Navigator.pushNamed(context, '/newPlan').then((value) {
+            refreshListData();
+            setState(() {});
+          });
+        },
+        foregroundColor: Colors.white,
+        backgroundColor: Colors.amber,
+        child: new Icon(Icons.add),
       ),
-      body: buildSuggestion(),
+        bottomNavigationBar: BottomAppBar(
+          color: Colors.white,
+          shape: CircularNotchedRectangle(), // 底部导航栏打一个圆形的洞
+          child:
+              new Row(
+                children: [
+                  IconButton(icon: Icon(Icons.today), onPressed: () {  },),
+                  SizedBox(), //中间位置空出
+                  IconButton(icon: Icon(Icons.access_alarm), onPressed: () {  },),
+                ],
+                mainAxisAlignment: MainAxisAlignment.spaceAround, //均分底部导航栏横向空间
+              ),
+        ),
+
     );
   }
 
@@ -146,21 +146,7 @@ class HomePageState extends State<HomePage> {
             itemBuilder: (context, i) {
               return buildListRaw(allItemTitle[i]);
             }),
-        new Container(
-          alignment: Alignment.bottomRight,
-          margin: const EdgeInsets.only(bottom: 20, right: 35),
-          child: new FloatingActionButton(
-            onPressed: () {
-              Navigator.pushNamed(context, '/newPlan').then((value) {
-                refreshListData();
-                setState(() {});
-              });
-            },
-            foregroundColor: Colors.white,
-            backgroundColor: Colors.amber,
-            child: new Icon(Icons.add),
-          ),
-        )
+
       ],
     );
   }
@@ -205,7 +191,7 @@ class HomePageState extends State<HomePage> {
       decoration: new BoxDecoration(
         borderRadius: new BorderRadius.all(new Radius.circular(5)),
         image: new DecorationImage(
-          image: new AssetImage("assets/bg_item_001.jpg"),
+          image: new AssetImage(allItem[title][3]),
           fit: BoxFit.cover,
         ),
       ),
@@ -263,7 +249,6 @@ class HomePageState extends State<HomePage> {
                       );
                     },
                     onTap: (bool isLiked) async {
-                      audioPlayer.play();
                       setState(() {
                         isLiked
                             ? allItem[title].remove(currentDate)
@@ -283,8 +268,9 @@ class HomePageState extends State<HomePage> {
                     Navigator.of(context)
                         .pushNamed("/planInfo", arguments: title)
                         .then((value) {
+                      appStart = true;
+                      print("object:$appStart");
                       refreshListData();
-                      setState(() {});
                     });
                 });
               },
@@ -299,10 +285,6 @@ class HomePageState extends State<HomePage> {
         ],
       ),
     );
-  }
-
-  Future<Null> _load() async {
-    mavUri = await audioPlayer.setAsset('assets/ringtone_check.wav');
   }
 
   Widget insistedCountView(String title) {
@@ -396,7 +378,7 @@ class HomePageState extends State<HomePage> {
   void itemTapMenuDeal(String title, int index) {
     if (index == 0) {
       //编辑
-
+      changePlanBg(title);
     } else if (index == 1) {
       //删除
       allItem.remove(title);
@@ -418,9 +400,10 @@ class HomePageState extends State<HomePage> {
   String dateCalculate(int weekday, bool all) {
     if (currentTime.day - currentTime.weekday + weekday > 0) {
       return all
-          ?( currentTime.year*10000 +
-              currentTime.month*100+
-              (currentTime.day - currentTime.weekday + weekday)).toString()
+          ? (currentTime.year * 10000 +
+                  currentTime.month * 100 +
+                  (currentTime.day - currentTime.weekday + weekday))
+              .toString()
           : (currentTime.day - currentTime.weekday + weekday).toString();
     }
     int dayOfMonth = 31;
@@ -440,14 +423,69 @@ class HomePageState extends State<HomePage> {
         currentTime.month == 1 ? currentTime.year - 1 : currentTime.year;
     int tempMonth = 12;
     if (currentTime.month != 1) {
-        tempMonth =currentTime.month - 1;
+      tempMonth = currentTime.month - 1;
     }
     return all
-        ? (tempYear*10000+tempMonth*100+
-            (dayOfMonth + currentTime.day - currentTime.weekday + weekday))
-                .toString()
+        ? (tempYear * 10000 +
+                tempMonth * 100 +
+                (dayOfMonth + currentTime.day - currentTime.weekday + weekday))
+            .toString()
         : (dayOfMonth + currentTime.day - currentTime.weekday + weekday)
             .toString();
+  }
+
+  String currentBg = ModelClass.bg[0];
+
+  changePlanBg(String title) async {
+    return await showDialog(
+        context: context,
+        builder: (context) {
+          return StatefulBuilder(builder: (context, state) {
+            return SimpleDialog(
+                title: new Text("修改卡片背景"), children: bgItem(title, state));
+          });
+        });
+  }
+
+  List<Widget> bgItem(String title, Function cc) {
+    List<Widget> bg = [];
+    for (int i = 0; i < ModelClass.bg.length; i++) {
+      bool isChecked = currentBg == ModelClass.bg[i];
+      bg.add(new Container(
+          alignment: Alignment.centerRight,
+          margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+          padding: const EdgeInsets.all(10),
+          decoration: new BoxDecoration(
+            borderRadius: new BorderRadius.all(new Radius.circular(5)),
+            image: new DecorationImage(
+              image: new AssetImage(ModelClass.bg[i]),
+              fit: BoxFit.cover,
+            ),
+          ),
+          child: TextButton(
+            child: new Icon(isChecked
+                ? Icons.check_box_outlined
+                : Icons.check_box_outline_blank),
+            onPressed: () {
+              setState(() {
+                currentBg = ModelClass.bg[i];
+              });
+              cc(() {});
+            },
+          )));
+    }
+    bg.add(new Container(
+      child: new TextButton(
+        child: new Text("确定"),
+        onPressed: () {
+          allItem[title][3] = currentBg;
+          changeItemData(title, false);
+          Navigator.pop(context);
+          setState(() {});
+        },
+      ),
+    ));
+    return bg;
   }
 
   makeUpPlan(String title) async {
@@ -520,8 +558,6 @@ class HomePageState extends State<HomePage> {
                     dotSecondaryColor: Colors.lightGreen,
                   ),
                   onTap: (bool isLiked) async {
-                    audioPlayer.play();
-
                     setState(() {
                       isLiked
                           ? allItem[title].remove(

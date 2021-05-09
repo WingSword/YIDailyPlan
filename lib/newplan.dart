@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:yi_daily_plan/model.dart';
 
 class NewPlanPage extends StatefulWidget {
   @override
@@ -20,38 +21,7 @@ class AddPlanState extends State<NewPlanPage> {
   int inputFrequency = 0;
   int selectedCircle = 0;
   List<String> barName = ["天", "周", "月", "年"];
-  List ic = [
-    'assets/icon0_muscle.png',
-    'assets/icon1_sun.png',
-    'assets/icon2_moon.png',
-    'assets/icon3_running.png',
-    'assets/icon4_writing.png',
-    'assets/icon5_egg.png',
-    'assets/icon6_barbecue.png',
-    'assets/icon8_icecream.png',
-    'assets/icon9_endocrine.png',
-    'assets/icon10_anti_corrosion.png',
-    'assets/icon11_fruit.png',
-    'assets/icon12_milkjuice.png',
-    'assets/icon13_game.png',
-    'assets/icon14_sport.png',
-    'assets/icon15_balanceweight.png',
-    'assets/icon16_twocode.png',
-    'assets/icon18_beer.png',
-    'assets/icon19_comments.png',
-    'assets/icon20_book.png',
-    'assets/icon22_purenatural.png',
-    'assets/icon24_teeth.png',
-    'assets/icon25_thinking.png',
-    'assets/icon26_candy.png',
-    'assets/icon28_skin.png',
-    'assets/icon7_code.png',
-    'assets/icon17_chafing_dish.png',
-    'assets/icon001_game2.png',
-    'assets/icon002_message.png',
-    'assets/icon003_love.png',
 
-  ];
   List iv = [
     "健身",
     "早起",
@@ -237,7 +207,7 @@ class AddPlanState extends State<NewPlanPage> {
                       mainAxisSpacing: 2,
                       crossAxisSpacing: 3.5,
                       children: gridItemBuild(
-                          ic.length > iv.length ? iv.length : ic.length),
+                          ModelClass.ic.length > iv.length ? iv.length : ModelClass.ic.length),
                     ),
                   )))
         ],
@@ -255,16 +225,16 @@ class AddPlanState extends State<NewPlanPage> {
 
   List<Widget> iconRowItem(int num){
     List<Widget> list=[];
-    for(int i=0;i<4&&i<ic.length-num;i++){
+    for(int i=0;i<4&&i<ModelClass.ic.length-num;i++){
       list.add(new TextButton(
         onPressed: () {
           setState(() {
-            inputIcon=ic[i+num];
+            inputIcon=ModelClass.ic[i+num];
           });
           Navigator.pop(context);
         },
         child: new Image.asset(
-          ic[i+num],
+          ModelClass.ic[i+num],
           height:28,
           width: 28,
         ),
@@ -274,7 +244,7 @@ class AddPlanState extends State<NewPlanPage> {
   }
   iconMarketDialog() async {
     List<Widget> iconList = [];
-    for (int i = 0; i < ic.length; i+=4) {
+    for (int i = 0; i < ModelClass.ic.length; i+=4) {
         iconList.add(new Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: iconRowItem(i),
@@ -306,7 +276,7 @@ class AddPlanState extends State<NewPlanPage> {
             crossAxisAlignment: WrapCrossAlignment.center,
             children: [
               new Image.asset(
-                ic[num],
+                ModelClass.ic[num],
                 height: 24,
               ),
               new Container(
@@ -379,7 +349,7 @@ class AddPlanState extends State<NewPlanPage> {
   void sendInputLine(int num) {
     setState(() {
       inputText = iv[num];
-      inputIcon = ic[num];
+      inputIcon = ModelClass.ic[num];
     });
   }
 
@@ -411,7 +381,7 @@ class AddPlanState extends State<NewPlanPage> {
     startData.add(inputIcon); //list[0]图标
     startData.add("$selectedCircle-$inputFrequency"); //list[1] 频率（天周月年 - 天）
     startData.add(DateTime.now().toString().substring(0, 10)); //list[2]创建日期
-    startData.add("value1"); //预置数据位
+    startData.add(ModelClass.bg[0]); //预置数据位
     startData.add("value2");
     prefs.setStringList(inputText, startData);
     Navigator.pop(context, true);

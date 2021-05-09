@@ -3,6 +3,7 @@ import 'package:flutter/widgets.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:table_calendar/table_calendar.dart';
+import 'package:yi_daily_plan/model.dart';
 
 import 'main.dart';
 
@@ -22,14 +23,20 @@ class PlanInfoState extends State<PlanInfoPage> {
   String titleName = "";
   String titleIcon = '';
   bool isStart = true;
+  bool refreshCalender = true;
   int validDay = 3;
 
   @override
   Widget build(BuildContext context) {
     //获取路由参数
-    titleName = ModalRoute.of(context).settings.arguments;
+    if (isStart) titleName = ModalRoute.of(context).settings.arguments;
     return Scaffold(
         appBar: new AppBar(
+          leading: new IconButton(
+              icon: new Icon(Icons.arrow_back),
+              onPressed: () {
+                Navigator.pop(context, true);
+              }),
           title: new TextButton(
               onPressed: () {
                 print('button click');
@@ -55,10 +62,10 @@ class PlanInfoState extends State<PlanInfoPage> {
                 iconSize: 28,
                 onSelected: (barItemName result) {
                   if (result.index == 0) {
+                    changePlan(titleName);
                   } else if (result.index == 1) {
                   } else if (result.index == 2) {
                     giveUpPlan();
-                    Navigator.pop(context, true);
                   }
                   setState(() {});
                 },
@@ -68,8 +75,6 @@ class PlanInfoState extends State<PlanInfoPage> {
                         value: barItemName.one,
                         child: Text('修改当前计划名称或图标'),
                       ),
-                      const PopupMenuItem<barItemName>(
-                          value: barItemName.two, child: Text('补卡')),
                       const PopupMenuItem<barItemName>(
                           value: barItemName.three, child: Text('放弃计划')),
                     ])
@@ -133,6 +138,7 @@ class PlanInfoState extends State<PlanInfoPage> {
   void giveUpPlan() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.remove(titleName);
+    Navigator.pop(context, true);
   }
 
   void changePlanState(String key) async {
@@ -143,6 +149,13 @@ class PlanInfoState extends State<PlanInfoPage> {
     } else {
       tem0p.add(key);
     }
+    prefs.setStringList(titleName, tem0p);
+  }
+
+  void changePlanName(String lastText) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    List tem0p = prefs.getStringList(lastText);
+    prefs.remove(lastText);
     prefs.setStringList(titleName, tem0p);
   }
 
@@ -174,10 +187,8 @@ class PlanInfoState extends State<PlanInfoPage> {
     int tempFre = 0;
     int temp = 0;
     int stringSub = 0;
+    list = [];
     for (int i = 0; i < tempList.length; i++) {
-      if (list.contains(tempList[i])) {
-        continue;
-      }
       list.add(int.parse(tempList[i]));
       if (frequency == 2) {
         stringSub = int.parse(tempList[i].substring(4, 6));
@@ -195,7 +206,6 @@ class PlanInfoState extends State<PlanInfoPage> {
       temp = stringSub;
     }
     if (isStart) {
-      print("${DateTime.now()} 刷新：${list.length}");
       isStart = false;
       setState(() {});
     }
@@ -235,6 +245,7 @@ class PlanInfoState extends State<PlanInfoPage> {
   Widget calenderDay(DateTime day) {
     double dayRadius1 = 0;
     double dayRadius2 = 0;
+    List<Color> color = [Colors.white, Colors.white];
     if (day.weekday == 7 ||
         (day.weekday != 7 &&
             !list.contains(day.year * 10000 + day.month * 100 + day.day - 1))) {
@@ -245,6 +256,9 @@ class PlanInfoState extends State<PlanInfoPage> {
             !list.contains(day.year * 10000 + day.month * 100 + day.day + 1))) {
       dayRadius2 = 25;
     }
+    if (list.contains(day.year * 10000 + day.month * 100 + day.day)) {
+      color = [Colors.lightBlueAccent, Colors.greenAccent[700]];
+    }
     return new Container(
         margin: const EdgeInsets.symmetric(vertical: 10),
         alignment: Alignment.center,
@@ -252,10 +266,7 @@ class PlanInfoState extends State<PlanInfoPage> {
             gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
-                colors:
-                    list.contains(day.year * 10000 + day.month * 100 + day.day)
-                        ? [Colors.lightBlueAccent, Colors.greenAccent[700]]
-                        : [Colors.white, Colors.white]),
+                colors: color),
             borderRadius: new BorderRadius.horizontal(
                 left: new Radius.circular(dayRadius1),
                 right: new Radius.circular(dayRadius2))),
@@ -311,7 +322,7 @@ class PlanInfoState extends State<PlanInfoPage> {
                 showMyToast("超过$validDay天不能补卡");
                 return;
               }
-              if (date1.isAfter(DateUtils.addDaysToDate(DateTime.now(), 1))) {
+              if (!date1.isBefore(DateUtils.addDaysToDate(DateTime.now(), 1))) {
                 showMyToast("只可补今日之前$validDay天的卡");
                 return;
               }
@@ -353,17 +364,86 @@ class PlanInfoState extends State<PlanInfoPage> {
                         (date.year * 10000 + date.month * 100 + date.day)
                             .toString());
                     if (list.contains(
-                        (date.year * 10000 + date.month * 100 + date.day)))
+                        (date.year * 10000 + date.month * 100 + date.day))) {
                       list.remove(
                           (date.year * 10000 + date.month * 100 + date.day));
-                    else
+                    } else
                       list.add(
                           (date.year * 10000 + date.month * 100 + date.day));
+                    getCircle(titleName);
                     setState(() {});
                     Navigator.pop(context, "yes");
                   }),
             ],
           );
         });
+  }
+
+  String inputText = "";
+
+  changePlan(String title) async {
+    inputText = titleName;
+    return await showDialog(
+        context: context,
+        builder: (context) {
+          return SimpleDialog(
+            contentPadding: EdgeInsets.all(5),
+            title: new Text("修改图标和名称"),
+            children: [
+              new TextField(
+                  decoration: InputDecoration(
+                    labelText: '计划名称',
+                    labelStyle: TextStyle(
+                        color: Colors.orangeAccent,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold),
+                    enabledBorder: OutlineInputBorder(
+                        gapPadding: 0,
+                        borderRadius: new BorderRadius.circular(8.0),
+                        borderSide: BorderSide(color: Colors.grey, width: 2.0)),
+                    focusedBorder: OutlineInputBorder(
+                      gapPadding: 2.0,
+                      borderRadius: new BorderRadius.circular(8.0),
+                      borderSide: BorderSide(color: Colors.black, width: 2.0),
+                    ),
+                  ),
+                  cursorColor: Colors.black,
+                  maxLength: 8,
+                  onChanged: (value) {
+                    this.inputText = value;
+                  },
+                  controller: TextEditingController.fromValue(TextEditingValue(
+                      text: '${this.inputText == null ? "" : this.inputText}',
+                      selection: TextSelection.fromPosition(TextPosition(
+                          affinity: TextAffinity.downstream,
+                          offset: '${this.inputText}'.length))))),
+              new TextButton(
+                  onPressed: () {
+                    changePlanName(titleName);
+                    setState(() {
+                      titleName = inputText;
+                    });
+                    Navigator.pop(context, "yes");
+                  },
+                  child: new Text("确定"))
+            ],
+          );
+        });
+  }
+
+  List<Widget> iconWidget() {
+    List<Widget> list = [];
+    for (int i = 0; i < ModelClass.ic.length; i++) {
+      list.add(new Container(
+          decoration: new BoxDecoration(
+              borderRadius: new BorderRadius.all(new Radius.circular(2)),
+              color: Colors.white),
+          child: new Image.asset(
+            ModelClass.ic[i],
+            height: 4,
+            width: 4,
+          )));
+    }
+    return list;
   }
 }

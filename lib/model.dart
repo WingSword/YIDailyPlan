@@ -1,0 +1,40 @@
+class ModelClass {
+  static final List ic = [
+    'assets/icon0_muscle.png',
+    'assets/icon1_sun.png',
+    'assets/icon2_moon.png',
+    'assets/icon3_running.png',
+    'assets/icon4_writing.png',
+    'assets/icon5_egg.png',
+    'assets/icon6_barbecue.png',
+    'assets/icon8_icecream.png',
+    'assets/icon9_endocrine.png',
+    'assets/icon10_anti_corrosion.png',
+    'assets/icon11_fruit.png',
+    'assets/icon12_milkjuice.png',
+    'assets/icon13_game.png',
+    'assets/icon14_sport.png',
+    'assets/icon15_balanceweight.png',
+    'assets/icon16_twocode.png',
+    'assets/icon18_beer.png',
+    'assets/icon19_comments.png',
+    'assets/icon20_book.png',
+    'assets/icon22_purenatural.png',
+    'assets/icon24_teeth.png',
+    'assets/icon25_thinking.png',
+    'assets/icon26_candy.png',
+    'assets/icon28_skin.png',
+    'assets/icon7_code.png',
+    'assets/icon17_chafing_dish.png',
+    'assets/icon001_game2.png',
+    'assets/icon002_message.png',
+    'assets/icon003_love.png',
+  ];
+  static final List bg = [
+    "assets/bg_item_001.jpg",
+    "assets/bg_item_002.jpg",
+    "assets/bg_item_003.jpg",
+    "assets/bg_item_004.jpg",
+    "assets/bg_item_005.jpg"
+  ];
+}

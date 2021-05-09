@@ -30,8 +30,8 @@ dependencies:
   shared_preferences: ^2.0.5
   # add this line to your dependencies
   fluttertoast: ^8.0.6
+  flutter_easyloading: ^3.0.0
   like_button: ^2.0.2
-  just_audio: 0.7.4
   table_calendar: ^3.0.0
 
 dev_dependencies:
@@ -53,6 +53,7 @@ flutter:
     - assets/bg_item_002.jpg
     - assets/bg_item_003.jpg
     - assets/bg_item_004.jpg
+    - assets/bg_item_005.jpg
     - assets/icon0_muscle.png
     - assets/icon1_sun.png
     - assets/icon2_moon.png
