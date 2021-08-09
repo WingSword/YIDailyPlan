@@ -5,6 +5,7 @@ import 'dart:typed_data';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:yi_daily_plan/Adapt.dart';
 import 'package:yi_daily_plan/model.dart';
 import 'package:yi_daily_plan/newplan.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -41,6 +42,8 @@ class HomePageState extends State<HomePage> {
   String focusedTitle = "";
   bool appStart = true;
   List<String> allItemTitle = [];
+  int currentPage = 1;
+  String currentTitle = "专注";
   Map allItem = new Map<String, List<String>>();
   final headCount = 5;
   var mavUri;
@@ -93,22 +96,23 @@ class HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     refreshListData();
     return new Scaffold(
-        appBar: new AppBar(
-          title: new Text(
-            monthEnglish[currentTime.month - 1] +
-                "." +
-                currentTime.day.toString(),
-            style: new TextStyle(color: Colors.black),
-          ),
-          shape: new RoundedRectangleBorder(
-              side: new BorderSide(width: 3, color: Colors.amber),
-              borderRadius: new BorderRadius.all(new Radius.circular(20))),
-          backgroundColor: Colors.amberAccent,
+      appBar: new AppBar(
+        title: new Text(
+          currentPage == 1
+              ? monthEnglish[currentTime.month - 1] +
+                  "." +
+                  currentTime.day.toString()
+              : currentTitle,
+          style: new TextStyle(color: Colors.black),
         ),
-        body: buildSuggestion(),
+        shape: new RoundedRectangleBorder(
+            side: new BorderSide(width: 3, color: Colors.amber),
+            borderRadius: new BorderRadius.all(new Radius.circular(20))),
+        backgroundColor: Colors.amberAccent,
+      ),
+      body: buildSuggestion(),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-
-      floatingActionButton:new FloatingActionButton(
+      floatingActionButton: new FloatingActionButton(
         onPressed: () {
           Navigator.pushNamed(context, '/newPlan').then((value) {
             refreshListData();
@@ -119,36 +123,81 @@ class HomePageState extends State<HomePage> {
         backgroundColor: Colors.amber,
         child: new Icon(Icons.add),
       ),
-        bottomNavigationBar: BottomAppBar(
-          color: Colors.white,
-          shape: CircularNotchedRectangle(), // 底部导航栏打一个圆形的洞
-          child:
-              new Row(
-                children: [
-                  IconButton(icon: Icon(Icons.today), onPressed: () {  },),
-                  SizedBox(), //中间位置空出
-                  IconButton(icon: Icon(Icons.access_alarm), onPressed: () {  },),
-                ],
-                mainAxisAlignment: MainAxisAlignment.spaceAround, //均分底部导航栏横向空间
+      bottomNavigationBar: BottomAppBar(
+        color: Colors.white,
+        shape: CircularNotchedRectangle(), // 底部导航栏打一个圆形的洞
+        child: new Row(
+          children: [
+            IconButton(
+              icon: Icon(
+                Icons.today,
+                color: currentPage == 1 ? Colors.teal : Colors.black,
               ),
+              onPressed: () {
+                currentPage = 1;
+                setState(() {});
+              },
+            ),
+            SizedBox(), //中间位置空出
+            IconButton(
+              icon: Icon(
+                Icons.access_alarm,
+                color: currentPage == 2 ? Colors.teal : Colors.black,
+              ),
+              onPressed: () {
+                currentPage = 2;
+                setState(() {});
+              },
+            ),
+          ],
+          mainAxisAlignment: MainAxisAlignment.spaceAround, //均分底部导航栏横向空间
         ),
-
+      ),
     );
   }
 
   Widget buildSuggestion() {
-    print("当前item数：${allItemTitle.length}---${DateTime.now()}");
-    return new Stack(
-      children: [
-        new ListView.builder(
-            padding: const EdgeInsets.all(8.0),
-            itemCount: allItemTitle.length,
-            itemBuilder: (context, i) {
-              return buildListRaw(allItemTitle[i]);
-            }),
-
-      ],
-    );
+    if (currentPage == 1) {
+      return new Stack(
+        children: [
+          new ListView.builder(
+              padding: const EdgeInsets.all(8.0),
+              itemCount: allItemTitle.length,
+              itemBuilder: (context, i) {
+                return buildListRaw(allItemTitle[i]);
+              }),
+        ],
+      );
+    } else if (currentPage == 2) {
+      return new Container(
+        alignment: Alignment.center,
+        child: new TextButton(
+            onPressed: () {},
+            child: new Container(
+                width: Adapt.px(520),
+                height: Adapt.px(520),
+                alignment: Alignment.center,
+                padding: const EdgeInsets.all(25),
+                decoration: new BoxDecoration(
+                  color: Colors.lightBlue,
+                  border: new Border.all(width: 3, color: Colors.deepOrange),
+                  borderRadius: new BorderRadius.all(Radius.circular(150)),
+                ),
+                child: new Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    new Text(
+                      "25:00",
+                      style: new TextStyle(fontSize: 80, color: Colors.white),
+                    ),
+                    new Text(
+                      "zhuanzhu",
+                      style: new TextStyle(fontSize: 20, color: Colors.white),
+                    ),
+                  ],
+                ))),
+      );
+    }
   }
 
   List<Widget> buildItemCalender(String title) {
